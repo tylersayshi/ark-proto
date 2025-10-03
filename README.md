@@ -239,3 +239,5 @@ const createPostSchema = arkproto.createProcedure("app.bsky.feed.createpost", {
 - `createProcedure` and `createSchema` are a bit ugly like this, but i'm not sure how to improve them
 - if there's value to having the type definition in typescript and/or validating that data fits a particular lexicon, this pattern would be very powerful
 - the richness of arktype's autocomplete & validation on different data shapes could make this pattern quite powerful
+
+P.S. I'm not sure if all the generated lexicons are currently correct, this is at the point where I want to show that it's possible to do, but not yet ready to use.
