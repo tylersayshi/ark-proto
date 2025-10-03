@@ -205,6 +205,129 @@ export class LexiconConverter {
     };
   }
 
+  /**
+   * Create a Lexicon query schema from ArkType types
+   */
+  static createQuery(
+    nsid: string,
+    options?: {
+      parameters?: Type;
+      output?: Type;
+      encoding?: string;
+    }
+  ): LexiconDoc {
+    this.validateNSID(nsid);
+
+    const defs: Record<string, LexiconDef> = {
+      main: {
+        type: "query",
+      } as LexiconQuery,
+    };
+
+    const mainDef = defs.main as LexiconQuery;
+
+    if (options?.parameters) {
+      const paramsType = this.toLexiconType(options.parameters);
+      if (paramsType.type !== "object") {
+        throw new Error("Query parameters must be an object type");
+      }
+
+      // Validate that all parameter properties are primitives
+      this.validateQueryParams(paramsType);
+
+      mainDef.parameters = {
+        type: "params",
+        properties: paramsType.properties,
+        ...(paramsType.required && { required: paramsType.required }),
+      };
+    }
+
+    if (options?.output) {
+      mainDef.output = {
+        encoding: options.encoding || "application/json",
+        schema: this.toLexiconType(options.output),
+      };
+    }
+
+    return {
+      lexicon: 1,
+      id: nsid,
+      defs,
+    };
+  }
+
+  /**
+   * Create a Lexicon procedure schema from ArkType types
+   */
+  static createProcedure(
+    nsid: string,
+    options?: {
+      parameters?: Type;
+      input?: Type;
+      output?: Type;
+      encoding?: string;
+    }
+  ): LexiconDoc {
+    this.validateNSID(nsid);
+
+    const defs: Record<string, LexiconDef> = {
+      main: {
+        type: "procedure",
+      } as LexiconProcedure,
+    };
+
+    const mainDef = defs.main as LexiconProcedure;
+
+    if (options?.parameters) {
+      const paramsType = this.toLexiconType(options.parameters);
+      if (paramsType.type !== "object") {
+        throw new Error("Procedure parameters must be an object type");
+      }
+
+      // Validate that all parameter properties are primitives
+      this.validateQueryParams(paramsType);
+
+      mainDef.parameters = {
+        type: "params",
+        properties: paramsType.properties,
+        ...(paramsType.required && { required: paramsType.required }),
+      };
+    }
+
+    if (options?.input) {
+      mainDef.input = {
+        encoding: options.encoding || "application/json",
+        schema: this.toLexiconType(options.input),
+      };
+    }
+
+    if (options?.output) {
+      mainDef.output = {
+        encoding: options.encoding || "application/json",
+        schema: this.toLexiconType(options.output),
+      };
+    }
+
+    return {
+      lexicon: 1,
+      id: nsid,
+      defs,
+    };
+  }
+
+  /**
+   * Validate that query/procedure parameters only contain primitive types
+   */
+  private static validateQueryParams(objType: LexiconObject): void {
+    for (const [key, propType] of Object.entries(objType.properties)) {
+      if (propType.type === "object" || propType.type === "array") {
+        throw new Error(
+          `Query/procedure parameter "${key}" must be a primitive type (boolean, integer, string). Got: ${propType.type}`
+        );
+      }
+    }
+  }
+
   private static validateNSID(nsid: string): void {
     // NSID format: domain.name.method
     const parts = nsid.split(".");
