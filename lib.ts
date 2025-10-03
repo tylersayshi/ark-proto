@@ -99,7 +99,7 @@ export type LexiconType =
   | LexiconUnion;
 
 // Type mapping utilities
-export class LexiconConverter {
+export class arkproto {
   /**
    * Convert an ArkType Type to a Lexicon type definition
    */
@@ -108,6 +108,7 @@ export class LexiconConverter {
     return this.jsonToLexiconType(json);
   }
 
+  // deno-lint-ignore no-explicit-any
   private static jsonToLexiconType(json: any): LexiconType {
     // Handle string references to primitive types
     if (typeof json === "string") {
@@ -127,7 +128,10 @@ export class LexiconConverter {
     }
 
     // Handle boolean (represented as union of true/false units)
-    if (Array.isArray(json) && json.every((n: any) => "unit" in n && typeof n.unit === "boolean")) {
+    if (
+      Array.isArray(json) &&
+      json.every((n) => "unit" in n && typeof n.unit === "boolean")
+    ) {
       return { type: "boolean" };
     }
 
@@ -172,13 +176,17 @@ export class LexiconConverter {
     }
 
     // Handle unions (array of unit types)
-    if (Array.isArray(json) && json.every((n: any) => "unit" in n)) {
+    if (Array.isArray(json) && json.every((n) => "unit" in n)) {
       throw new Error(
-        `Union types require named refs in Lexicon. Got union: ${json.map((n: any) => JSON.stringify(n.unit)).join(" | ")}`
+        `Union types require named refs in Lexicon. Got union: ${json
+          .map((n) => JSON.stringify(n.unit))
+          .join(" | ")}`
       );
     }
 
-    throw new Error(`Unsupported ArkType JSON structure: ${JSON.stringify(json)}`);
+    throw new Error(
+      `Unsupported ArkType JSON structure: ${JSON.stringify(json)}`
+    );
   }
 
   /**

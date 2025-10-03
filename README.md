@@ -240,17 +240,8 @@ const createPostSchema = LexiconConverter.createProcedure(
 }
 ```
 
-## Idea
+## Reflecting
 
-this would like be condensed to a single step like this:
-
-```ts
-import { schema } from "ark-schema";
-
-const Post = schema("app.bsky.feed.post", {
-  text: "string",
-  createdAt: "string",
-});
-```
-
-the hard bit would be to get the typing from arktype on the second param, but I believe that's achievable.
+- `createProcedure` and `createSchema` are a bit ugly like this, but i'm not sure how to improve them
+- if there's value to having the type definition in typescript and/or validating that data fits a particular lexicon, this pattern would be very powerful
+- the richness of arktype's autocomplete & validation on different data shapes could make this pattern quite powerful

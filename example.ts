@@ -1,5 +1,5 @@
 import { type } from "arktype";
-import { LexiconConverter } from "./lib.ts";
+import { arkproto } from "./lib.ts";
 
 // =============================================================================
 // Example 1: Social Media Post Record
@@ -11,7 +11,7 @@ const Post = type({
   createdAt: "string",
 });
 
-const postSchema = LexiconConverter.createRecord("app.bsky.feed.post", Post);
+const postSchema = arkproto.createRecord("app.bsky.feed.post", Post);
 console.log(JSON.stringify(postSchema, null, 2));
 
 // =============================================================================
@@ -27,7 +27,7 @@ const Like = type({
   createdAt: "string",
 });
 
-const likeSchema = LexiconConverter.createRecord("app.bsky.feed.like", Like);
+const likeSchema = arkproto.createRecord("app.bsky.feed.like", Like);
 console.log(JSON.stringify(likeSchema, null, 2));
 
 // =============================================================================
@@ -52,13 +52,10 @@ const FeedResponse = type({
   feed: FeedItem.array(),
 });
 
-const getFeedSchema = LexiconConverter.createQuery(
-  "app.bsky.feed.gettimeline",
-  {
-    parameters: GetFeedParams,
-    output: FeedResponse,
-  }
-);
+const getFeedSchema = arkproto.createQuery("app.bsky.feed.gettimeline", {
+  parameters: GetFeedParams,
+  output: FeedResponse,
+});
 console.log(JSON.stringify(getFeedSchema, null, 2));
 
 // =============================================================================
@@ -76,11 +73,8 @@ const CreatePostOutput = type({
   cid: "string",
 });
 
-const createPostSchema = LexiconConverter.createProcedure(
-  "app.bsky.feed.createpost",
-  {
-    input: CreatePostInput,
-    output: CreatePostOutput,
-  }
-);
+const createPostSchema = arkproto.createProcedure("app.bsky.feed.createpost", {
+  input: CreatePostInput,
+  output: CreatePostOutput,
+});
 console.log(JSON.stringify(createPostSchema, null, 2));
