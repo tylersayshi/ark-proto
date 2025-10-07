@@ -120,61 +120,40 @@ export class arkproto {
 
   // deno-lint-ignore no-explicit-any
   private static jsonSchemaToLexiconType(json: any): LexiconType {
-    // Handle string references to primitive types
-    if (typeof json === "string") {
-      if (json === "string") return { type: "string" };
-      if (json === "number") return { type: "integer" };
-      if (json === "boolean") return { type: "boolean" };
-      if (json === "null") return { type: "null" };
-      throw new Error(`Unsupported string reference: ${json}`);
-    }
-
-    // Handle primitives with domain
-    if (json.domain === "string") {
+    // Handle standard JSON Schema format
+    if (json.type === "string") {
       return { type: "string" };
     }
-    if (json.domain === "number") {
+
+    if (json.type === "number" || json.type === "integer") {
       return { type: "integer" };
     }
 
-    // Handle boolean (represented as union of true/false units)
-    if (
-      Array.isArray(json) &&
-      json.every((n) => "unit" in n && typeof n.unit === "boolean")
-    ) {
+    if (json.type === "boolean") {
       return { type: "boolean" };
     }
 
-    // Handle null
-    if (json.unit === null) {
+    if (json.type === "null") {
       return { type: "null" };
     }
 
-    // Handle arrays (sequence with proto: "Array")
-    if (json.sequence && json.proto === "Array") {
+    // Handle arrays
+    if (json.type === "array") {
       return {
         type: "array",
-        items: this.jsonSchemaToLexiconType(json.sequence),
+        items: this.jsonSchemaToLexiconType(json.items),
       };
     }
 
     // Handle objects
-    if (json.domain === "object") {
+    if (json.type === "object") {
       const properties: Record<string, LexiconType> = {};
-      const required: string[] = [];
+      const required: string[] = json.required || [];
 
-      // Process required properties
-      if (json.required) {
-        for (const prop of json.required) {
-          properties[prop.key] = this.jsonSchemaToLexiconType(prop.value);
-          required.push(prop.key);
-        }
-      }
-
-      // Process optional properties
-      if (json.optional) {
-        for (const prop of json.optional) {
-          properties[prop.key] = this.jsonSchemaToLexiconType(prop.value);
+      // Process properties
+      if (json.properties) {
+        for (const [key, value] of Object.entries(json.properties)) {
+          properties[key] = this.jsonSchemaToLexiconType(value);
         }
       }
 
@@ -185,17 +164,8 @@ export class arkproto {
       };
     }
 
-    // Handle unions (array of unit types)
-    if (Array.isArray(json) && json.every((n) => "unit" in n)) {
-      throw new Error(
-        `Union types require named refs in Lexicon. Got union: ${json
-          .map((n) => JSON.stringify(n.unit))
-          .join(" | ")}`
-      );
-    }
-
     throw new Error(
-      `Unsupported ArkType JSON structure: ${JSON.stringify(json)}`
+      `Unsupported JSON Schema structure: ${JSON.stringify(json)}`
     );
   }
 
