@@ -3,7 +3,9 @@
     "dev": "deno run --watch main.ts"
   },
   "imports": {
+    "@standard-schema/spec": "npm:@standard-schema/spec@^1.0.0",
     "@std/assert": "jsr:@std/assert@1",
-    "arktype": "npm:arktype@2.1.22"
+    "arktype": "npm:arktype@2.1.22",
+    "zod": "npm:zod@4.1.12"
   }
 }

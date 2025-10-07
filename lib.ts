@@ -1,4 +1,4 @@
-import { Type } from "arktype";
+import type { StandardSchemaV1 } from "@standard-schema/spec";
 
 // ATProto Lexicon schema types
 export interface LexiconDoc {
@@ -101,15 +101,25 @@ export type LexiconType =
 // Type mapping utilities
 export class arkproto {
   /**
-   * Convert an ArkType Type to a Lexicon type definition
+   * Convert a StandardSchema to a Lexicon type definition
    */
-  static toLexiconType(arktypeType: Type): LexiconType {
-    const json = arktypeType.json;
-    return this.jsonToLexiconType(json);
+  static toLexiconType(schema: StandardSchemaV1): LexiconType {
+    const standardSchema = schema["~standard"];
+    if (!("toJSONSchema" in standardSchema)) {
+      throw new Error(
+        "standard-lexicon builds from the proposed toJSONSchema method of standard-schema"
+      );
+    }
+
+    // Lol this part will get better when/if the standard adopts `toJSONSchema`
+
+    const jsonSchema = // deno-lint-ignore no-explicit-any
+      (standardSchema.toJSONSchema as (options: unknown) => any)({});
+    return this.jsonSchemaToLexiconType(jsonSchema);
   }
 
   // deno-lint-ignore no-explicit-any
-  private static jsonToLexiconType(json: any): LexiconType {
+  private static jsonSchemaToLexiconType(json: any): LexiconType {
     // Handle string references to primitive types
     if (typeof json === "string") {
       if (json === "string") return { type: "string" };
@@ -144,7 +154,7 @@ export class arkproto {
     if (json.sequence && json.proto === "Array") {
       return {
         type: "array",
-        items: this.jsonToLexiconType(json.sequence),
+        items: this.jsonSchemaToLexiconType(json.sequence),
       };
     }
 
@@ -156,7 +166,7 @@ export class arkproto {
       // Process required properties
       if (json.required) {
         for (const prop of json.required) {
-          properties[prop.key] = this.jsonToLexiconType(prop.value);
+          properties[prop.key] = this.jsonSchemaToLexiconType(prop.value);
           required.push(prop.key);
         }
       }
@@ -164,7 +174,7 @@ export class arkproto {
       // Process optional properties
       if (json.optional) {
         for (const prop of json.optional) {
-          properties[prop.key] = this.jsonToLexiconType(prop.value);
+          properties[prop.key] = this.jsonSchemaToLexiconType(prop.value);
         }
       }
 
@@ -190,12 +200,12 @@ export class arkproto {
   }
 
   /**
-   * Create a Lexicon record schema from an ArkType type
+   * Create a Lexicon record schema from a StandardSchema
    */
-  static createRecord(nsid: string, arktypeType: Type): LexiconDoc {
+  static createRecord(nsid: string, schema: StandardSchemaV1): LexiconDoc {
     this.validateNSID(nsid);
 
-    const lexiconType = this.toLexiconType(arktypeType);
+    const lexiconType = this.toLexiconType(schema);
 
     if (lexiconType.type !== "object") {
       throw new Error("Record schemas must be object types");
@@ -214,13 +224,13 @@ export class arkproto {
   }
 
   /**
-   * Create a Lexicon query schema from ArkType types
+   * Create a Lexicon query schema from StandardSchemas
    */
   static createQuery(
     nsid: string,
     options?: {
-      parameters?: Type;
-      output?: Type;
+      parameters?: StandardSchemaV1;
+      output?: StandardSchemaV1;
       encoding?: string;
     }
   ): LexiconDoc {
@@ -265,14 +275,14 @@ export class arkproto {
   }
 
   /**
-   * Create a Lexicon procedure schema from ArkType types
+   * Create a Lexicon procedure schema from StandardSchemas
    */
   static createProcedure(
     nsid: string,
     options?: {
-      parameters?: Type;
-      input?: Type;
-      output?: Type;
+      parameters?: StandardSchemaV1;
+      input?: StandardSchemaV1;
+      output?: StandardSchemaV1;
       encoding?: string;
     }
   ): LexiconDoc {
