@@ -120,21 +120,13 @@ export class arkproto {
 
   // deno-lint-ignore no-explicit-any
   private static jsonSchemaToLexiconType(json: any): LexiconType {
-    // Handle standard JSON Schema format
-    if (json.type === "string") {
-      return { type: "string" };
+    // Handle primitives
+    if (["string", "boolean", "null"].includes(json.type)) {
+      return { type: json.type };
     }
 
     if (json.type === "number" || json.type === "integer") {
       return { type: "integer" };
-    }
-
-    if (json.type === "boolean") {
-      return { type: "boolean" };
-    }
-
-    if (json.type === "null") {
-      return { type: "null" };
     }
 
     // Handle arrays
@@ -148,20 +140,18 @@ export class arkproto {
     // Handle objects
     if (json.type === "object") {
       const properties: Record<string, LexiconType> = {};
-      const required: string[] = json.required || [];
 
-      // Process properties
       if (json.properties) {
         for (const [key, value] of Object.entries(json.properties)) {
           properties[key] = this.jsonSchemaToLexiconType(value);
         }
       }
 
-      return {
-        type: "object",
-        properties,
-        ...(required.length > 0 && { required }),
-      };
+      const result: LexiconObject = { type: "object", properties };
+      if (json.required?.length > 0) {
+        result.required = json.required;
+      }
+      return result;
     }
 
     throw new Error(
