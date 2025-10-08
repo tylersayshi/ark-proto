@@ -1,13 +1,13 @@
 import type { StandardSchemaV1 } from "@standard-schema/spec";
 
 // ATProto Lexicon schema types
-export interface LexiconDoc {
+interface LexiconDoc {
   lexicon: 1;
   id: string; // NSID
   defs: Record<string, LexiconDef>;
 }
 
-export type LexiconDef =
+type LexiconDef =
   | LexiconRecord
   | LexiconQuery
   | LexiconProcedure
@@ -17,55 +17,55 @@ export type LexiconDef =
   | LexiconRef
   | LexiconUnion;
 
-export interface LexiconRecord {
+interface LexiconRecord {
   type: "record";
   key?: string;
   record: LexiconObject;
 }
 
-export interface LexiconQuery {
+interface LexiconQuery {
   type: "query";
   parameters?: LexiconParams;
   output?: LexiconOutput;
 }
 
-export interface LexiconProcedure {
+interface LexiconProcedure {
   type: "procedure";
   parameters?: LexiconParams;
   input?: LexiconInput;
   output?: LexiconOutput;
 }
 
-export interface LexiconParams {
+interface LexiconParams {
   type: "params";
   properties: Record<string, LexiconType>;
   required?: string[];
 }
 
-export interface LexiconInput {
+interface LexiconInput {
   encoding: string;
   schema?: LexiconType;
 }
 
-export interface LexiconOutput {
+interface LexiconOutput {
   encoding: string;
   schema?: LexiconType;
 }
 
-export interface LexiconObject {
+interface LexiconObject {
   type: "object";
   properties: Record<string, LexiconType>;
   required?: string[];
 }
 
-export interface LexiconArray {
+interface LexiconArray {
   type: "array";
   items: LexiconType;
   minLength?: number;
   maxLength?: number;
 }
 
-export interface LexiconPrimitive {
+interface LexiconPrimitive {
   type:
     | "string"
     | "integer"
@@ -81,7 +81,7 @@ export interface LexiconPrimitive {
   maximum?: number;
 }
 
-export interface LexiconRef {
+interface LexiconRef {
   type: "ref";
   ref: string;
 }
@@ -321,3 +321,5 @@ export class arkproto {
     }
   }
 }
+
+// about the different primary types https://atproto.com/specs/lexicon#primary-type-definitions
