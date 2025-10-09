@@ -75,3 +75,88 @@ Deno.test("lx.unknown()", () => {
   const result = lx.unknown();
   assertEquals(result, { type: "unknown" });
 });
+
+Deno.test("lx.bytes()", () => {
+  const result = lx.bytes();
+  assertEquals(result, { type: "bytes" });
+});
+
+Deno.test("lx.bytes() with minLength", () => {
+  const result = lx.bytes({ minLength: 1 });
+  assertEquals(result, { type: "bytes", minLength: 1 });
+});
+
+Deno.test("lx.bytes() with maxLength", () => {
+  const result = lx.bytes({ maxLength: 1024 });
+  assertEquals(result, { type: "bytes", maxLength: 1024 });
+});
+
+Deno.test("lx.bytes() with minLength and maxLength", () => {
+  const result = lx.bytes({ minLength: 1, maxLength: 1024 });
+  assertEquals(result, { type: "bytes", minLength: 1, maxLength: 1024 });
+});
+
+Deno.test("lx.blob()", () => {
+  const result = lx.blob();
+  assertEquals(result, { type: "blob" });
+});
+
+Deno.test("lx.blob() with accept", () => {
+  const result = lx.blob({ accept: ["image/png", "image/jpeg"] });
+  assertEquals(result, { type: "blob", accept: ["image/png", "image/jpeg"] });
+});
+
+Deno.test("lx.blob() with maxSize", () => {
+  const result = lx.blob({ maxSize: 1000000 });
+  assertEquals(result, { type: "blob", maxSize: 1000000 });
+});
+
+Deno.test("lx.blob() with accept and maxSize", () => {
+  const result = lx.blob({
+    accept: ["image/png", "image/jpeg"],
+    maxSize: 5000000,
+  });
+  assertEquals(result, {
+    type: "blob",
+    accept: ["image/png", "image/jpeg"],
+    maxSize: 5000000,
+  });
+});
+
+Deno.test("lx.array() with string items", () => {
+  const result = lx.array({ items: lx.string() });
+  assertEquals(result, { type: "array", items: { type: "string" } });
+});
+
+Deno.test("lx.array() with integer items", () => {
+  const result = lx.array({ items: lx.integer() });
+  assertEquals(result, { type: "array", items: { type: "integer" } });
+});
+
+Deno.test("lx.array() with minLength", () => {
+  const result = lx.array({ items: lx.string(), minLength: 1 });
+  assertEquals(result, {
+    type: "array",
+    items: { type: "string" },
+    minLength: 1,
+  });
+});
+
+Deno.test("lx.array() with maxLength", () => {
+  const result = lx.array({ items: lx.string(), maxLength: 10 });
+  assertEquals(result, {
+    type: "array",
+    items: { type: "string" },
+    maxLength: 10,
+  });
+});
+
+Deno.test("lx.array() with minLength and maxLength", () => {
+  const result = lx.array({ items: lx.string(), minLength: 1, maxLength: 10 });
+  assertEquals(result, {
+    type: "array",
+    items: { type: "string" },
+    minLength: 1,
+    maxLength: 10,
+  });
+});

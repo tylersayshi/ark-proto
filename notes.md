@@ -29,3 +29,29 @@ The conversion is essentially a pass-through for basic types. The real work woul
 2. Preserving validation constraints
 3. Handling $ref → Lexicon ref conversion
 4. Handling oneOf/anyOf → Lexicon union conversion
+
+## Remaining Lexicon Types to Implement
+
+### Concrete types (1 remaining)
+- [ ] `cid-link` - for content identifiers
+
+### Container types (1 remaining)
+- [ ] `params` - for query parameters
+
+### Meta types (3 remaining)
+- [ ] `token` - for referencing named values
+- [ ] `ref` - for schema references
+- [ ] `union` - for type unions
+
+### Primary types (3 remaining)
+- [ ] `query` - for query/read operations
+- [ ] `procedure` - for write/action operations
+- [ ] `subscription` - for streaming subscriptions
+
+**Total: 8 types remaining** (out of 18 total)
+
+**Already implemented: 10 types**
+- ✅ null, boolean, integer, string, bytes, blob
+- ✅ array, object
+- ✅ unknown
+- ✅ record

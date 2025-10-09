@@ -68,6 +68,22 @@ interface IntegerOptions extends LexiconItemCommonOptions {
   const?: number;
 }
 
+interface BytesOptions extends LexiconItemCommonOptions {
+  minLength?: number;
+  maxLength?: number;
+}
+
+interface BlobOptions extends LexiconItemCommonOptions {
+  accept?: string[];
+  maxSize?: number;
+}
+
+interface ArrayOptions extends LexiconItemCommonOptions {
+  items: LexiconItem;
+  minLength?: number;
+  maxLength?: number;
+}
+
 interface RecordOptions {
   key: "self" | "tid";
   record: { type: "object" };
@@ -119,6 +135,24 @@ export const lx = {
   ): { type: "unknown" } & LexiconItemCommonOptions {
     return {
       type: "unknown",
+      ...options,
+    };
+  },
+  bytes<T extends BytesOptions>(options?: T): T & { type: "bytes" } {
+    return {
+      type: "bytes",
+      ...options,
+    } as T & { type: "bytes" };
+  },
+  blob<T extends BlobOptions>(options?: T): T & { type: "blob" } {
+    return {
+      type: "blob",
+      ...options,
+    } as T & { type: "blob" };
+  },
+  array<T extends ArrayOptions>(options: T): T & { type: "array" } {
+    return {
+      type: "array",
       ...options,
     };
   },
