@@ -55,6 +55,19 @@ interface StringOptions extends LexiconItemCommonOptions {
   const?: string;
 }
 
+interface BooleanOptions extends LexiconItemCommonOptions {
+  default?: boolean;
+  const?: boolean;
+}
+
+interface IntegerOptions extends LexiconItemCommonOptions {
+  minimum?: number;
+  maximum?: number;
+  enum?: number[];
+  default?: number;
+  const?: number;
+}
+
 interface RecordOptions {
   key: "self" | "tid";
   record: { type: "object" };
@@ -75,9 +88,37 @@ interface ObjectResult<T extends ObjectProperties> {
  * Main API: Create a namespace (lexicon document)
  */
 export const lx = {
-  string<T extends StringOptions>(options: T): T & { type: "string" } {
+  null(
+    options?: LexiconItemCommonOptions
+  ): { type: "null" } & LexiconItemCommonOptions {
+    return {
+      type: "null",
+      ...options,
+    };
+  },
+  boolean<T extends BooleanOptions>(options?: T): T & { type: "boolean" } {
+    return {
+      type: "boolean",
+      ...options,
+    } as T & { type: "boolean" };
+  },
+  integer<T extends IntegerOptions>(options?: T): T & { type: "integer" } {
+    return {
+      type: "integer",
+      ...options,
+    } as T & { type: "integer" };
+  },
+  string<T extends StringOptions>(options?: T): T & { type: "string" } {
     return {
       type: "string",
+      ...options,
+    } as T & { type: "string" };
+  },
+  unknown(
+    options?: LexiconItemCommonOptions
+  ): { type: "unknown" } & LexiconItemCommonOptions {
+    return {
+      type: "unknown",
       ...options,
     };
   },
@@ -113,10 +154,14 @@ export const lx = {
     }
     return result;
   },
-  namespace<T extends LexiconNamespace>(schema: T): T & { lexicon: 1 } {
+  namespace<ID extends string, D extends LexiconNamespace["defs"]>(
+    id: ID,
+    defs: D
+  ): { lexicon: 1; id: ID; defs: D } {
     return {
       lexicon: 1,
-      ...schema,
+      id,
+      defs,
     };
   },
 };

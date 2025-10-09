@@ -1,18 +1,15 @@
 import { assertEquals } from "@std/assert";
 import { lx } from "../lib.ts";
 
-Deno.test("Bluesky Actor Profile", () => {
-  const profileNamespace = lx.namespace({
-    id: "app.bsky.actor.profile",
-    defs: {
-      main: lx.record({
-        key: "self",
-        record: lx.object({
-          displayName: lx.string({ maxLength: 64, maxGraphemes: 64 }),
-          description: lx.string({ maxLength: 256, maxGraphemes: 256 }),
-        }),
+Deno.test("app.bsky.actor.profile", () => {
+  const profileNamespace = lx.namespace("app.bsky.actor.profile", {
+    main: lx.record({
+      key: "self",
+      record: lx.object({
+        displayName: lx.string({ maxLength: 64, maxGraphemes: 64 }),
+        description: lx.string({ maxLength: 256, maxGraphemes: 256 }),
       }),
-    },
+    }),
   });
 
   assertEquals(profileNamespace, {
