@@ -1,243 +1,52 @@
-# ark-proto
+# typed-lexicon
 
-an experiment for using arktype to author atproto schemas
+this will be a toolkit for writing lexicon json schema's in typescript and providing types for lexicon data shape. it will:
 
-[example.ts](./example.ts)
+- remove boilerplate and improve ergonomics
+- type hint for [atproto type parameters](https://atproto.com/specs/lexicon#overview-of-types)
+- infer the typescript type definitions for the data shape to avoid duplication and skew
+- methods and a cli for generating json
 
-```bash
-$ deno run example.ts
-```
-
-## **Social Media Post Record**
+**what you'd write:**
 
 ```typescript
-const Post = type({
-  text: "string",
-  createdAt: "string",
+const profileNamespace = lx.namespace("app.bsky.actor.profile", {
+  main: lx.record({
+    key: "self",
+    record: lx.object({
+      displayName: lx.string({ maxLength: 64, maxGraphemes: 64 }),
+      description: lx.string({ maxLength: 256, maxGraphemes: 256 }),
+    }),
+  }),
 });
-
-const postSchema = arkproto.createRecord("app.bsky.feed.post", Post);
 ```
+
+**generates to:**
 
 ```json
 {
   "lexicon": 1,
-  "id": "app.bsky.feed.post",
+  "id": "app.bsky.actor.profile",
   "defs": {
     "main": {
       "type": "record",
+      "key": "self",
       "record": {
         "type": "object",
         "properties": {
-          "createdAt": {
-            "type": "string"
+          "displayName": {
+            "type": "string",
+            "maxLength": 64,
+            "maxGraphemes": 64
           },
-          "text": {
-            "type": "string"
+          "description": {
+            "type": "string",
+            "maxLength": 256,
+            "maxGraphemes": 256
           }
-        },
-        "required": ["createdAt", "text"]
-      }
-    }
-  }
-}
-```
-
-## **Like Record**
-
-```typescript
-const Like = type({
-  subject: {
-    uri: "string",
-    cid: "string",
-  },
-  createdAt: "string",
-});
-
-const likeSchema = arkproto.createRecord("app.bsky.feed.like", Like);
-```
-
-```json
-{
-  "lexicon": 1,
-  "id": "app.bsky.feed.like",
-  "defs": {
-    "main": {
-      "type": "record",
-      "record": {
-        "type": "object",
-        "properties": {
-          "createdAt": {
-            "type": "string"
-          },
-          "subject": {
-            "type": "object",
-            "properties": {
-              "cid": {
-                "type": "string"
-              },
-              "uri": {
-                "type": "string"
-              }
-            },
-            "required": ["cid", "uri"]
-          }
-        },
-        "required": ["createdAt", "subject"]
-      }
-    }
-  }
-}
-```
-
-## **Query - Get Feed Timeline**
-
-```typescript
-const GetFeedParams = type({
-  limit: "number",
-  cursor: "string",
-});
-
-const FeedItem = type({
-  post: {
-    uri: "string",
-    cid: "string",
-  },
-});
-
-const FeedResponse = type({
-  cursor: "string",
-  feed: FeedItem.array(),
-});
-
-const getFeedSchema = arkproto.createQuery("app.bsky.feed.gettimeline", {
-  parameters: GetFeedParams,
-  output: FeedResponse,
-});
-```
-
-```json
-{
-  "lexicon": 1,
-  "id": "app.bsky.feed.gettimeline",
-  "defs": {
-    "main": {
-      "type": "query",
-      "parameters": {
-        "type": "params",
-        "properties": {
-          "cursor": {
-            "type": "string"
-          },
-          "limit": {
-            "type": "integer"
-          }
-        },
-        "required": ["cursor", "limit"]
-      },
-      "output": {
-        "encoding": "application/json",
-        "schema": {
-          "type": "object",
-          "properties": {
-            "cursor": {
-              "type": "string"
-            },
-            "feed": {
-              "type": "array",
-              "items": {
-                "type": "object",
-                "properties": {
-                  "post": {
-                    "type": "object",
-                    "properties": {
-                      "cid": {
-                        "type": "string"
-                      },
-                      "uri": {
-                        "type": "string"
-                      }
-                    },
-                    "required": ["cid", "uri"]
-                  }
-                },
-                "required": ["post"]
-              }
-            }
-          },
-          "required": ["cursor", "feed"]
         }
       }
     }
   }
 }
 ```
-
-## **Procedure - Create Post**
-
-```typescript
-const CreatePostInput = type({
-  text: "string",
-  createdAt: "string",
-});
-
-const CreatePostOutput = type({
-  uri: "string",
-  cid: "string",
-});
-
-const createPostSchema = arkproto.createProcedure("app.bsky.feed.createpost", {
-  input: CreatePostInput,
-  output: CreatePostOutput,
-});
-```
-
-```json
-{
-  "lexicon": 1,
-  "id": "app.bsky.feed.createpost",
-  "defs": {
-    "main": {
-      "type": "procedure",
-      "input": {
-        "encoding": "application/json",
-        "schema": {
-          "type": "object",
-          "properties": {
-            "createdAt": {
-              "type": "string"
-            },
-            "text": {
-              "type": "string"
-            }
-          },
-          "required": ["createdAt", "text"]
-        }
-      },
-      "output": {
-        "encoding": "application/json",
-        "schema": {
-          "type": "object",
-          "properties": {
-            "cid": {
-              "type": "string"
-            },
-            "uri": {
-              "type": "string"
-            }
-          },
-          "required": ["cid", "uri"]
-        }
-      }
-    }
-  }
-}
-```
-
-## Reflecting
-
-- `createProcedure` and `createSchema` are a bit ugly like this, but i'm not sure how to improve them
-- if there's value to having the type definition in typescript and/or validating that data fits a particular lexicon, this pattern would be very powerful
-- the richness of arktype's autocomplete & validation on different data shapes could make this pattern quite powerful
-
-P.S. I'm not sure if all the generated lexicons are currently correct, this is at the point where I want to show that it's possible to do, but not yet ready to use.
