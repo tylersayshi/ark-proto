@@ -124,17 +124,17 @@ Deno.test("lx.blob() with accept and maxSize", () => {
 });
 
 Deno.test("lx.array() with string items", () => {
-  const result = lx.array({ items: lx.string() });
+  const result = lx.array(lx.string());
   assertEquals(result, { type: "array", items: { type: "string" } });
 });
 
 Deno.test("lx.array() with integer items", () => {
-  const result = lx.array({ items: lx.integer() });
+  const result = lx.array(lx.integer());
   assertEquals(result, { type: "array", items: { type: "integer" } });
 });
 
 Deno.test("lx.array() with minLength", () => {
-  const result = lx.array({ items: lx.string(), minLength: 1 });
+  const result = lx.array(lx.string(), { minLength: 1 });
   assertEquals(result, {
     type: "array",
     items: { type: "string" },
@@ -143,7 +143,7 @@ Deno.test("lx.array() with minLength", () => {
 });
 
 Deno.test("lx.array() with maxLength", () => {
-  const result = lx.array({ items: lx.string(), maxLength: 10 });
+  const result = lx.array(lx.string(), { maxLength: 10 });
   assertEquals(result, {
     type: "array",
     items: { type: "string" },
@@ -152,7 +152,7 @@ Deno.test("lx.array() with maxLength", () => {
 });
 
 Deno.test("lx.array() with minLength and maxLength", () => {
-  const result = lx.array({ items: lx.string(), minLength: 1, maxLength: 10 });
+  const result = lx.array(lx.string(), { minLength: 1, maxLength: 10 });
   assertEquals(result, {
     type: "array",
     items: { type: "string" },

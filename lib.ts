@@ -79,7 +79,6 @@ interface BlobOptions extends LexiconItemCommonOptions {
 }
 
 interface ArrayOptions extends LexiconItemCommonOptions {
-  items: LexiconItem;
   minLength?: number;
   maxLength?: number;
 }
@@ -150,11 +149,15 @@ export const lx = {
       ...options,
     } as T & { type: "blob" };
   },
-  array<T extends ArrayOptions>(options: T): T & { type: "array" } {
+  array<Items extends LexiconItem, Options extends ArrayOptions>(
+    items: Items,
+    options?: Options
+  ): Options & { type: "array"; items: Items } {
     return {
       type: "array",
+      items,
       ...options,
-    };
+    } as Options & { type: "array"; items: Items };
   },
   record<T extends RecordOptions>(options: T): T & { type: "record" } {
     return {
