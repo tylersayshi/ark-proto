@@ -16,7 +16,7 @@ test("app.bsky.actor.defs - profileViewBasic", () => {
 		status: lx.ref("#statusView"),
 	});
 
-	expect(profileViewBasic).toEqual({
+	expect(profileViewBasic.json).toEqual({
 		type: "object",
 		properties: {
 			did: { type: "string", required: true, format: "did" },
@@ -55,7 +55,7 @@ test("app.bsky.actor.defs - profileView", () => {
 		status: lx.ref("#statusView"),
 	});
 
-	expect(profileView).toEqual({
+	expect(profileView.json).toEqual({
 		type: "object",
 		properties: {
 			did: { type: "string", required: true, format: "did" },
@@ -103,7 +103,7 @@ test("app.bsky.actor.defs - profileViewDetailed", () => {
 		status: lx.ref("#statusView"),
 	});
 
-	expect(profileViewDetailed).toEqual({
+	expect(profileViewDetailed.json).toEqual({
 		type: "object",
 		properties: {
 			did: { type: "string", required: true, format: "did" },
@@ -147,7 +147,7 @@ test("app.bsky.actor.defs - profileAssociated", () => {
 		activitySubscription: lx.ref("#profileAssociatedActivitySubscription"),
 	});
 
-	expect(profileAssociated).toEqual({
+	expect(profileAssociated.json).toEqual({
 		type: "object",
 		properties: {
 			lists: { type: "integer" },
@@ -171,7 +171,7 @@ test("app.bsky.actor.defs - profileAssociatedChat", () => {
 		}),
 	});
 
-	expect(profileAssociatedChat).toEqual({
+	expect(profileAssociatedChat.json).toEqual({
 		type: "object",
 		properties: {
 			allowIncoming: {
@@ -192,7 +192,7 @@ test("app.bsky.actor.defs - profileAssociatedActivitySubscription", () => {
 		}),
 	});
 
-	expect(profileAssociatedActivitySubscription).toEqual({
+	expect(profileAssociatedActivitySubscription.json).toEqual({
 		type: "object",
 		properties: {
 			allowSubscriptions: {
@@ -220,7 +220,7 @@ test("app.bsky.actor.defs - viewerState", () => {
 		),
 	});
 
-	expect(viewerState).toEqual({
+	expect(viewerState.json).toEqual({
 		type: "object",
 		properties: {
 			muted: { type: "boolean" },
@@ -249,7 +249,7 @@ test("app.bsky.actor.defs - knownFollowers", () => {
 		}),
 	});
 
-	expect(knownFollowers).toEqual({
+	expect(knownFollowers.json).toEqual({
 		type: "object",
 		properties: {
 			count: { type: "integer", required: true },
@@ -278,7 +278,7 @@ test("app.bsky.actor.defs - verificationState", () => {
 		}),
 	});
 
-	expect(verificationState).toEqual({
+	expect(verificationState.json).toEqual({
 		type: "object",
 		properties: {
 			verifications: {
@@ -309,7 +309,7 @@ test("app.bsky.actor.defs - verificationView", () => {
 		createdAt: lx.string({ required: true, format: "datetime" }),
 	});
 
-	expect(verificationView).toEqual({
+	expect(verificationView.json).toEqual({
 		type: "object",
 		properties: {
 			issuer: { type: "string", required: true, format: "did" },
@@ -341,7 +341,7 @@ test("app.bsky.actor.defs - preferences", () => {
 		]),
 	);
 
-	expect(preferences).toEqual({
+	expect(preferences.json).toEqual({
 		type: "array",
 		items: {
 			type: "union",
@@ -370,7 +370,7 @@ test("app.bsky.actor.defs - adultContentPref", () => {
 		enabled: lx.boolean({ required: true, default: false }),
 	});
 
-	expect(adultContentPref).toEqual({
+	expect(adultContentPref.json).toEqual({
 		type: "object",
 		properties: {
 			enabled: { type: "boolean", required: true, default: false },
@@ -389,7 +389,7 @@ test("app.bsky.actor.defs - contentLabelPref", () => {
 		}),
 	});
 
-	expect(contentLabelPref).toEqual({
+	expect(contentLabelPref.json).toEqual({
 		type: "object",
 		properties: {
 			labelerDid: { type: "string", format: "did" },
@@ -415,7 +415,7 @@ test("app.bsky.actor.defs - savedFeed", () => {
 		pinned: lx.boolean({ required: true }),
 	});
 
-	expect(savedFeed).toEqual({
+	expect(savedFeed.json).toEqual({
 		type: "object",
 		properties: {
 			id: { type: "string", required: true },
@@ -438,7 +438,7 @@ test("app.bsky.actor.defs - savedFeedsPrefV2", () => {
 		}),
 	});
 
-	expect(savedFeedsPrefV2).toEqual({
+	expect(savedFeedsPrefV2.json).toEqual({
 		type: "object",
 		properties: {
 			items: {
@@ -458,7 +458,7 @@ test("app.bsky.actor.defs - savedFeedsPref", () => {
 		timelineIndex: lx.integer(),
 	});
 
-	expect(savedFeedsPref).toEqual({
+	expect(savedFeedsPref.json).toEqual({
 		type: "object",
 		properties: {
 			pinned: {
@@ -482,7 +482,7 @@ test("app.bsky.actor.defs - personalDetailsPref", () => {
 		birthDate: lx.string({ format: "datetime" }),
 	});
 
-	expect(personalDetailsPref).toEqual({
+	expect(personalDetailsPref.json).toEqual({
 		type: "object",
 		properties: {
 			birthDate: { type: "string", format: "datetime" },
@@ -500,7 +500,7 @@ test("app.bsky.actor.defs - feedViewPref", () => {
 		hideQuotePosts: lx.boolean(),
 	});
 
-	expect(feedViewPref).toEqual({
+	expect(feedViewPref.json).toEqual({
 		type: "object",
 		properties: {
 			feed: { type: "string", required: true },
@@ -522,7 +522,7 @@ test("app.bsky.actor.defs - threadViewPref", () => {
 		prioritizeFollowedUsers: lx.boolean(),
 	});
 
-	expect(threadViewPref).toEqual({
+	expect(threadViewPref.json).toEqual({
 		type: "object",
 		properties: {
 			sort: {
@@ -542,7 +542,7 @@ test("app.bsky.actor.defs - interestsPref", () => {
 		}),
 	});
 
-	expect(interestsPref).toEqual({
+	expect(interestsPref.json).toEqual({
 		type: "object",
 		properties: {
 			tags: {
@@ -563,7 +563,7 @@ test("app.bsky.actor.defs - mutedWordTarget", () => {
 		maxGraphemes: 64,
 	});
 
-	expect(mutedWordTarget).toEqual({
+	expect(mutedWordTarget.json).toEqual({
 		type: "string",
 		knownValues: ["content", "tag"],
 		maxLength: 640,
@@ -585,7 +585,7 @@ test("app.bsky.actor.defs - mutedWord", () => {
 		expiresAt: lx.string({ format: "datetime" }),
 	});
 
-	expect(mutedWord).toEqual({
+	expect(mutedWord.json).toEqual({
 		type: "object",
 		properties: {
 			id: { type: "string" },
@@ -618,7 +618,7 @@ test("app.bsky.actor.defs - mutedWordsPref", () => {
 		}),
 	});
 
-	expect(mutedWordsPref).toEqual({
+	expect(mutedWordsPref.json).toEqual({
 		type: "object",
 		properties: {
 			items: {
@@ -636,7 +636,7 @@ test("app.bsky.actor.defs - hiddenPostsPref", () => {
 		items: lx.array(lx.string({ format: "at-uri" }), { required: true }),
 	});
 
-	expect(hiddenPostsPref).toEqual({
+	expect(hiddenPostsPref.json).toEqual({
 		type: "object",
 		properties: {
 			items: {
@@ -654,7 +654,7 @@ test("app.bsky.actor.defs - labelersPref", () => {
 		labelers: lx.array(lx.ref("#labelerPrefItem"), { required: true }),
 	});
 
-	expect(labelersPref).toEqual({
+	expect(labelersPref.json).toEqual({
 		type: "object",
 		properties: {
 			labelers: {
@@ -672,7 +672,7 @@ test("app.bsky.actor.defs - labelerPrefItem", () => {
 		did: lx.string({ required: true, format: "did" }),
 	});
 
-	expect(labelerPrefItem).toEqual({
+	expect(labelerPrefItem.json).toEqual({
 		type: "object",
 		properties: {
 			did: { type: "string", required: true, format: "did" },
@@ -688,7 +688,7 @@ test("app.bsky.actor.defs - bskyAppStatePref", () => {
 		nuxs: lx.array(lx.ref("app.bsky.actor.defs#nux"), { maxLength: 100 }),
 	});
 
-	expect(bskyAppStatePref).toEqual({
+	expect(bskyAppStatePref.json).toEqual({
 		type: "object",
 		properties: {
 			activeProgressGuide: { type: "ref", ref: "#bskyAppProgressGuide" },
@@ -711,7 +711,7 @@ test("app.bsky.actor.defs - bskyAppProgressGuide", () => {
 		guide: lx.string({ required: true, maxLength: 100 }),
 	});
 
-	expect(bskyAppProgressGuide).toEqual({
+	expect(bskyAppProgressGuide.json).toEqual({
 		type: "object",
 		properties: {
 			guide: { type: "string", required: true, maxLength: 100 },
@@ -728,7 +728,7 @@ test("app.bsky.actor.defs - nux", () => {
 		expiresAt: lx.string({ format: "datetime" }),
 	});
 
-	expect(nux).toEqual({
+	expect(nux.json).toEqual({
 		type: "object",
 		properties: {
 			id: { type: "string", required: true, maxLength: 100 },
@@ -745,7 +745,7 @@ test("app.bsky.actor.defs - verificationPrefs", () => {
 		hideBadges: lx.boolean({ default: false }),
 	});
 
-	expect(verificationPrefs).toEqual({
+	expect(verificationPrefs.json).toEqual({
 		type: "object",
 		properties: {
 			hideBadges: { type: "boolean", default: false },
@@ -770,7 +770,7 @@ test("app.bsky.actor.defs - postInteractionSettingsPref", () => {
 		),
 	});
 
-	expect(postInteractionSettingsPref).toEqual({
+	expect(postInteractionSettingsPref.json).toEqual({
 		type: "object",
 		properties: {
 			threadgateAllowRules: {
@@ -810,7 +810,7 @@ test("app.bsky.actor.defs - statusView", () => {
 		isActive: lx.boolean(),
 	});
 
-	expect(statusView).toEqual({
+	expect(statusView.json).toEqual({
 		type: "object",
 		properties: {
 			status: {
@@ -862,6 +862,6 @@ test("app.bsky.actor.defs - full namespace", () => {
 
 	expect(actorDefs.json.lexicon).toEqual(1);
 	expect(actorDefs.id).toEqual("app.bsky.actor.defs");
-	expect(actorDefs.defs.profileViewBasic.type).toEqual("object");
-	expect(actorDefs.defs.viewerState.type).toEqual("object");
+	expect(actorDefs.json.defs.profileViewBasic.type).toEqual("object");
+	expect(actorDefs.json.defs.viewerState.type).toEqual("object");
 });

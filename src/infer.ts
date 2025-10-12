@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-empty-object-type */
-type InferType<T> = T extends { type: "record" }
+export type InferType<T> = T extends { type: "record" }
 	? InferRecord<T>
 	: T extends { type: "object" }
 		? InferObject<T>

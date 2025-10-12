@@ -25,7 +25,7 @@ test("app.bsky.feed.defs - postView", () => {
 		threadgate: lx.ref("#threadgateView"),
 	});
 
-	expect(postView).toEqual({
+	expect(postView.json).toEqual({
 		type: "object",
 		properties: {
 			uri: { type: "string", required: true, format: "at-uri" },
@@ -74,7 +74,7 @@ test("app.bsky.feed.defs - viewerState", () => {
 		pinned: lx.boolean(),
 	});
 
-	expect(viewerState).toEqual({
+	expect(viewerState.json).toEqual({
 		type: "object",
 		properties: {
 			repost: { type: "string", format: "at-uri" },
@@ -93,7 +93,7 @@ test("app.bsky.feed.defs - threadContext", () => {
 		rootAuthorLike: lx.string({ format: "at-uri" }),
 	});
 
-	expect(threadContext).toEqual({
+	expect(threadContext.json).toEqual({
 		type: "object",
 		properties: {
 			rootAuthorLike: { type: "string", format: "at-uri" },
@@ -110,7 +110,7 @@ test("app.bsky.feed.defs - feedViewPost", () => {
 		reqId: lx.string({ maxLength: 100 }),
 	});
 
-	expect(feedViewPost).toEqual({
+	expect(feedViewPost.json).toEqual({
 		type: "object",
 		properties: {
 			post: { type: "ref", ref: "#postView", required: true },
@@ -137,7 +137,7 @@ test("app.bsky.feed.defs - replyRef", () => {
 		grandparentAuthor: lx.ref("app.bsky.actor.defs#profileViewBasic"),
 	});
 
-	expect(replyRef).toEqual({
+	expect(replyRef.json).toEqual({
 		type: "object",
 		properties: {
 			root: {
@@ -167,7 +167,7 @@ test("app.bsky.feed.defs - reasonRepost", () => {
 		indexedAt: lx.string({ required: true, format: "datetime" }),
 	});
 
-	expect(reasonRepost).toEqual({
+	expect(reasonRepost.json).toEqual({
 		type: "object",
 		properties: {
 			by: {
@@ -186,7 +186,7 @@ test("app.bsky.feed.defs - reasonRepost", () => {
 test("app.bsky.feed.defs - reasonPin", () => {
 	const reasonPin = lx.object({});
 
-	expect(reasonPin).toEqual({
+	expect(reasonPin.json).toEqual({
 		type: "object",
 		properties: {},
 	});
@@ -202,7 +202,7 @@ test("app.bsky.feed.defs - threadViewPost", () => {
 		threadContext: lx.ref("#threadContext"),
 	});
 
-	expect(threadViewPost).toEqual({
+	expect(threadViewPost.json).toEqual({
 		type: "object",
 		properties: {
 			post: { type: "ref", ref: "#postView", required: true },
@@ -229,7 +229,7 @@ test("app.bsky.feed.defs - notFoundPost", () => {
 		notFound: lx.boolean({ required: true, const: true }),
 	});
 
-	expect(notFoundPost).toEqual({
+	expect(notFoundPost.json).toEqual({
 		type: "object",
 		properties: {
 			uri: { type: "string", required: true, format: "at-uri" },
@@ -246,7 +246,7 @@ test("app.bsky.feed.defs - blockedPost", () => {
 		author: lx.ref("#blockedAuthor", { required: true }),
 	});
 
-	expect(blockedPost).toEqual({
+	expect(blockedPost.json).toEqual({
 		type: "object",
 		properties: {
 			uri: { type: "string", required: true, format: "at-uri" },
@@ -263,7 +263,7 @@ test("app.bsky.feed.defs - blockedAuthor", () => {
 		viewer: lx.ref("app.bsky.actor.defs#viewerState"),
 	});
 
-	expect(blockedAuthor).toEqual({
+	expect(blockedAuthor.json).toEqual({
 		type: "object",
 		properties: {
 			did: { type: "string", required: true, format: "did" },
@@ -296,7 +296,7 @@ test("app.bsky.feed.defs - generatorView", () => {
 		indexedAt: lx.string({ required: true, format: "datetime" }),
 	});
 
-	expect(generatorView).toEqual({
+	expect(generatorView.json).toEqual({
 		type: "object",
 		properties: {
 			uri: { type: "string", required: true, format: "at-uri" },
@@ -339,7 +339,7 @@ test("app.bsky.feed.defs - generatorViewerState", () => {
 		like: lx.string({ format: "at-uri" }),
 	});
 
-	expect(generatorViewerState).toEqual({
+	expect(generatorViewerState.json).toEqual({
 		type: "object",
 		properties: {
 			like: { type: "string", format: "at-uri" },
@@ -354,7 +354,7 @@ test("app.bsky.feed.defs - skeletonFeedPost", () => {
 		feedContext: lx.string({ maxLength: 2000 }),
 	});
 
-	expect(skeletonFeedPost).toEqual({
+	expect(skeletonFeedPost.json).toEqual({
 		type: "object",
 		properties: {
 			post: { type: "string", required: true, format: "at-uri" },
@@ -373,7 +373,7 @@ test("app.bsky.feed.defs - skeletonReasonRepost", () => {
 		repost: lx.string({ required: true, format: "at-uri" }),
 	});
 
-	expect(skeletonReasonRepost).toEqual({
+	expect(skeletonReasonRepost.json).toEqual({
 		type: "object",
 		properties: {
 			repost: { type: "string", required: true, format: "at-uri" },
@@ -385,7 +385,7 @@ test("app.bsky.feed.defs - skeletonReasonRepost", () => {
 test("app.bsky.feed.defs - skeletonReasonPin", () => {
 	const skeletonReasonPin = lx.object({});
 
-	expect(skeletonReasonPin).toEqual({
+	expect(skeletonReasonPin.json).toEqual({
 		type: "object",
 		properties: {},
 	});
@@ -399,7 +399,7 @@ test("app.bsky.feed.defs - threadgateView", () => {
 		lists: lx.array(lx.ref("app.bsky.graph.defs#listViewBasic")),
 	});
 
-	expect(threadgateView).toEqual({
+	expect(threadgateView.json).toEqual({
 		type: "object",
 		properties: {
 			uri: { type: "string", format: "at-uri" },
@@ -436,7 +436,7 @@ test("app.bsky.feed.defs - interaction", () => {
 		reqId: lx.string({ maxLength: 100 }),
 	});
 
-	expect(interaction).toEqual({
+	expect(interaction.json).toEqual({
 		type: "object",
 		properties: {
 			item: { type: "string", format: "at-uri" },
@@ -468,7 +468,7 @@ test("app.bsky.feed.defs - requestLess token", () => {
 		"Request that less content like the given feed item be shown in the feed",
 	);
 
-	expect(requestLess).toEqual({
+	expect(requestLess.json).toEqual({
 		type: "token",
 		description:
 			"Request that less content like the given feed item be shown in the feed",
@@ -480,7 +480,7 @@ test("app.bsky.feed.defs - requestMore token", () => {
 		"Request that more content like the given feed item be shown in the feed",
 	);
 
-	expect(requestMore).toEqual({
+	expect(requestMore.json).toEqual({
 		type: "token",
 		description:
 			"Request that more content like the given feed item be shown in the feed",
@@ -490,7 +490,7 @@ test("app.bsky.feed.defs - requestMore token", () => {
 test("app.bsky.feed.defs - clickthroughItem token", () => {
 	const clickthroughItem = lx.token("User clicked through to the feed item");
 
-	expect(clickthroughItem).toEqual({
+	expect(clickthroughItem.json).toEqual({
 		type: "token",
 		description: "User clicked through to the feed item",
 	});
@@ -501,7 +501,7 @@ test("app.bsky.feed.defs - clickthroughAuthor token", () => {
 		"User clicked through to the author of the feed item",
 	);
 
-	expect(clickthroughAuthor).toEqual({
+	expect(clickthroughAuthor.json).toEqual({
 		type: "token",
 		description: "User clicked through to the author of the feed item",
 	});
@@ -512,7 +512,7 @@ test("app.bsky.feed.defs - clickthroughReposter token", () => {
 		"User clicked through to the reposter of the feed item",
 	);
 
-	expect(clickthroughReposter).toEqual({
+	expect(clickthroughReposter.json).toEqual({
 		type: "token",
 		description: "User clicked through to the reposter of the feed item",
 	});
@@ -523,7 +523,7 @@ test("app.bsky.feed.defs - clickthroughEmbed token", () => {
 		"User clicked through to the embedded content of the feed item",
 	);
 
-	expect(clickthroughEmbed).toEqual({
+	expect(clickthroughEmbed.json).toEqual({
 		type: "token",
 		description:
 			"User clicked through to the embedded content of the feed item",
@@ -535,7 +535,7 @@ test("app.bsky.feed.defs - contentModeUnspecified token", () => {
 		"Declares the feed generator returns any types of posts.",
 	);
 
-	expect(contentModeUnspecified).toEqual({
+	expect(contentModeUnspecified.json).toEqual({
 		type: "token",
 		description: "Declares the feed generator returns any types of posts.",
 	});
@@ -546,7 +546,7 @@ test("app.bsky.feed.defs - contentModeVideo token", () => {
 		"Declares the feed generator returns posts containing app.bsky.embed.video embeds.",
 	);
 
-	expect(contentModeVideo).toEqual({
+	expect(contentModeVideo.json).toEqual({
 		type: "token",
 		description:
 			"Declares the feed generator returns posts containing app.bsky.embed.video embeds.",
@@ -556,7 +556,7 @@ test("app.bsky.feed.defs - contentModeVideo token", () => {
 test("app.bsky.feed.defs - interactionSeen token", () => {
 	const interactionSeen = lx.token("Feed item was seen by user");
 
-	expect(interactionSeen).toEqual({
+	expect(interactionSeen.json).toEqual({
 		type: "token",
 		description: "Feed item was seen by user",
 	});
@@ -565,7 +565,7 @@ test("app.bsky.feed.defs - interactionSeen token", () => {
 test("app.bsky.feed.defs - interactionLike token", () => {
 	const interactionLike = lx.token("User liked the feed item");
 
-	expect(interactionLike).toEqual({
+	expect(interactionLike.json).toEqual({
 		type: "token",
 		description: "User liked the feed item",
 	});
@@ -574,7 +574,7 @@ test("app.bsky.feed.defs - interactionLike token", () => {
 test("app.bsky.feed.defs - interactionRepost token", () => {
 	const interactionRepost = lx.token("User reposted the feed item");
 
-	expect(interactionRepost).toEqual({
+	expect(interactionRepost.json).toEqual({
 		type: "token",
 		description: "User reposted the feed item",
 	});
@@ -583,7 +583,7 @@ test("app.bsky.feed.defs - interactionRepost token", () => {
 test("app.bsky.feed.defs - interactionReply token", () => {
 	const interactionReply = lx.token("User replied to the feed item");
 
-	expect(interactionReply).toEqual({
+	expect(interactionReply.json).toEqual({
 		type: "token",
 		description: "User replied to the feed item",
 	});
@@ -592,7 +592,7 @@ test("app.bsky.feed.defs - interactionReply token", () => {
 test("app.bsky.feed.defs - interactionQuote token", () => {
 	const interactionQuote = lx.token("User quoted the feed item");
 
-	expect(interactionQuote).toEqual({
+	expect(interactionQuote.json).toEqual({
 		type: "token",
 		description: "User quoted the feed item",
 	});
@@ -601,7 +601,7 @@ test("app.bsky.feed.defs - interactionQuote token", () => {
 test("app.bsky.feed.defs - interactionShare token", () => {
 	const interactionShare = lx.token("User shared the feed item");
 
-	expect(interactionShare).toEqual({
+	expect(interactionShare.json).toEqual({
 		type: "token",
 		description: "User shared the feed item",
 	});
@@ -674,8 +674,8 @@ test("app.bsky.feed.defs - full namespace", () => {
 
 	expect(feedDefs.json.lexicon).toEqual(1);
 	expect(feedDefs.id).toEqual("app.bsky.feed.defs");
-	expect(feedDefs.defs.postView.type).toEqual("object");
-	expect(feedDefs.defs.viewerState.type).toEqual("object");
-	expect(feedDefs.defs.requestLess.type).toEqual("token");
-	expect(feedDefs.defs.contentModeVideo.type).toEqual("token");
+	expect(feedDefs.json.defs.postView.type).toEqual("object");
+	expect(feedDefs.json.defs.viewerState.type).toEqual("object");
+	expect(feedDefs.json.defs.requestLess.type).toEqual("token");
+	expect(feedDefs.json.defs.contentModeVideo.type).toEqual("token");
 });

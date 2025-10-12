@@ -1,4 +1,4 @@
-import type { InferNS } from "./infer.ts";
+import type { InferNS, InferType } from "./infer.ts";
 
 /** @see https://atproto.com/specs/lexicon#overview-of-types */
 type LexiconType =
@@ -305,16 +305,409 @@ interface SubscriptionOptions {
 	errors?: ErrorDef[];
 }
 
+/**
+ * Base class for all lexicon items with .json and .infer properties.
+ */
+abstract class BaseLexiconItem<Json> {
+	abstract json: Json;
+
+	get infer(): InferType<Json> {
+		return {} as InferType<Json>;
+	}
+}
+
+/**
+ * Null type class.
+ */
+class LxNull extends BaseLexiconItem<{ type: "null" } & LexiconItemCommonOptions> {
+	public json: { type: "null" } & LexiconItemCommonOptions;
+
+	constructor(options?: LexiconItemCommonOptions) {
+		super();
+		this.json = { type: "null", ...options };
+	}
+}
+
+/**
+ * Boolean type class.
+ */
+class LxBoolean<
+	Options extends BooleanOptions,
+> extends BaseLexiconItem<Options & { type: "boolean" }> {
+	public json: Options & { type: "boolean" };
+
+	constructor(options?: Options) {
+		super();
+		this.json = { type: "boolean", ...options } as Options & { type: "boolean" };
+	}
+}
+
+/**
+ * Integer type class.
+ */
+class LxInteger<
+	Options extends IntegerOptions,
+> extends BaseLexiconItem<Options & { type: "integer" }> {
+	public json: Options & { type: "integer" };
+
+	constructor(options?: Options) {
+		super();
+		this.json = { type: "integer", ...options } as Options & { type: "integer" };
+	}
+}
+
+/**
+ * String type class.
+ */
+class LxString<
+	Options extends StringOptions,
+> extends BaseLexiconItem<Options & { type: "string" }> {
+	public json: Options & { type: "string" };
+
+	constructor(options?: Options) {
+		super();
+		this.json = { type: "string", ...options } as Options & { type: "string" };
+	}
+}
+
+/**
+ * Unknown type class.
+ */
+class LxUnknown extends BaseLexiconItem<
+	{ type: "unknown" } & LexiconItemCommonOptions
+> {
+	public json: { type: "unknown" } & LexiconItemCommonOptions;
+
+	constructor(options?: LexiconItemCommonOptions) {
+		super();
+		this.json = { type: "unknown", ...options };
+	}
+}
+
+/**
+ * Bytes type class.
+ */
+class LxBytes<
+	Options extends BytesOptions,
+> extends BaseLexiconItem<Options & { type: "bytes" }> {
+	public json: Options & { type: "bytes" };
+
+	constructor(options?: Options) {
+		super();
+		this.json = { type: "bytes", ...options } as Options & { type: "bytes" };
+	}
+}
+
+/**
+ * CID Link type class.
+ */
+class LxCidLink<Link extends string> extends BaseLexiconItem<{
+	type: "cid-link";
+	$link: Link;
+}> {
+	public json: { type: "cid-link"; $link: Link };
+
+	constructor(link: Link) {
+		super();
+		this.json = { type: "cid-link", $link: link };
+	}
+}
+
+/**
+ * Blob type class.
+ */
+class LxBlob<
+	Options extends BlobOptions,
+> extends BaseLexiconItem<Options & { type: "blob" }> {
+	public json: Options & { type: "blob" };
+
+	constructor(options?: Options) {
+		super();
+		this.json = { type: "blob", ...options } as Options & { type: "blob" };
+	}
+}
+
+/**
+ * Array type class.
+ */
+class LxArray<
+	Items extends LexiconItem,
+	Options extends ArrayOptions,
+> extends BaseLexiconItem<Options & { type: "array"; items: Items }> {
+	public json: Options & { type: "array"; items: Items };
+
+	constructor(items: Items | BaseLexiconItem<Items>, options?: Options) {
+		super();
+		// Serialize items using .json if available
+		const serializedItems = (items as any)?.json ?? items;
+		this.json = {
+			type: "array",
+			items: serializedItems,
+			...options,
+		} as Options & { type: "array"; items: Items };
+	}
+}
+
+/**
+ * Object type class.
+ */
+class LxObject<T extends ObjectProperties> extends BaseLexiconItem<
+	ObjectResult<T>
+> {
+	public json: ObjectResult<T>;
+
+	constructor(properties: T) {
+		super();
+		// Extract required and nullable fields
+		const required = Object.keys(properties).filter((key) => {
+			const value = properties[key] as any;
+			return value?.json?.required ?? value?.required;
+		});
+		const nullable = Object.keys(properties).filter((key) => {
+			const value = properties[key] as any;
+			return value?.json?.nullable ?? value?.nullable;
+		});
+
+		// Serialize properties using .json if available
+		const serializedProps = Object.fromEntries(
+			Object.entries(properties).map(([key, value]) => [
+				key,
+				(value as any)?.json ?? value,
+			]),
+		) as T;
+
+		const result: ObjectResult<T> = {
+			type: "object",
+			properties: serializedProps,
+		};
+
+		if (required.length > 0) {
+			result.required = required;
+		}
+		if (nullable.length > 0) {
+			result.nullable = nullable;
+		}
+
+		this.json = result;
+	}
+}
+
+/**
+ * Params type class.
+ */
+class LxParams<T extends ParamsProperties> extends BaseLexiconItem<
+	ParamsResult<T>
+> {
+	public json: ParamsResult<T>;
+
+	constructor(properties: T) {
+		super();
+		// Extract required fields
+		const required = Object.keys(properties).filter((key) => {
+			const value = properties[key] as any;
+			return value?.json?.required ?? value?.required;
+		});
+
+		// Serialize properties using .json if available
+		const serializedProps = Object.fromEntries(
+			Object.entries(properties).map(([key, value]) => [
+				key,
+				(value as any)?.json ?? value,
+			]),
+		) as T;
+
+		const result: ParamsResult<T> = {
+			type: "params",
+			properties: serializedProps,
+		};
+
+		if (required.length > 0) {
+			result.required = required;
+		}
+
+		this.json = result;
+	}
+}
+
+/**
+ * Token type class.
+ */
+class LxToken<Description extends string> extends BaseLexiconItem<{
+	type: "token";
+	description: Description;
+}> {
+	public json: { type: "token"; description: Description };
+
+	constructor(description: Description) {
+		super();
+		this.json = { type: "token", description };
+	}
+}
+
+/**
+ * Ref type class.
+ */
+class LxRef<
+	Ref extends string,
+> extends BaseLexiconItem<
+	LexiconItemCommonOptions & { type: "ref"; ref: Ref }
+> {
+	public json: LexiconItemCommonOptions & { type: "ref"; ref: Ref };
+
+	constructor(ref: Ref, options?: LexiconItemCommonOptions) {
+		super();
+		this.json = { type: "ref", ref, ...options };
+	}
+}
+
+/**
+ * Union type class.
+ */
+class LxUnion<
+	Refs extends readonly string[],
+	Options extends UnionOptions,
+> extends BaseLexiconItem<Options & { type: "union"; refs: Refs }> {
+	public json: Options & { type: "union"; refs: Refs };
+
+	constructor(refs: Refs, options?: Options) {
+		super();
+		this.json = { type: "union", refs, ...options } as Options & {
+			type: "union";
+			refs: Refs;
+		};
+	}
+}
+
+/**
+ * Record type class.
+ */
+class LxRecord<
+	T extends RecordOptions,
+> extends BaseLexiconItem<T & { type: "record" }> {
+	public json: T & { type: "record" };
+
+	constructor(options: T) {
+		super();
+		// Serialize the record property if it's a class instance
+		const serializedOptions = {
+			...options,
+			record: (options.record as any)?.json ?? options.record,
+		} as T;
+		this.json = { type: "record", ...serializedOptions };
+	}
+}
+
+/**
+ * Query type class.
+ */
+class LxQuery<
+	T extends QueryOptions,
+> extends BaseLexiconItem<T & { type: "query" }> {
+	public json: T & { type: "query" };
+
+	constructor(options?: T) {
+		super();
+		// Serialize nested params and output if they have .json
+		const serializedOptions = options
+			? {
+					...options,
+					parameters: (options.parameters as any)?.json ?? options.parameters,
+					output: options.output
+						? {
+								...options.output,
+								schema: (options.output.schema as any)?.json ?? options.output.schema,
+							}
+						: undefined,
+				}
+			: {};
+		this.json = { type: "query", ...serializedOptions } as T & { type: "query" };
+	}
+}
+
+/**
+ * Procedure type class.
+ */
+class LxProcedure<
+	T extends ProcedureOptions,
+> extends BaseLexiconItem<T & { type: "procedure" }> {
+	public json: T & { type: "procedure" };
+
+	constructor(options?: T) {
+		super();
+		// Serialize nested params, input, and output if they have .json
+		const serializedOptions = options
+			? {
+					...options,
+					parameters: (options.parameters as any)?.json ?? options.parameters,
+					input: options.input
+						? {
+								...options.input,
+								schema: (options.input.schema as any)?.json ?? options.input.schema,
+							}
+						: undefined,
+					output: options.output
+						? {
+								...options.output,
+								schema: (options.output.schema as any)?.json ?? options.output.schema,
+							}
+						: undefined,
+				}
+			: {};
+		this.json = {
+			type: "procedure",
+			...serializedOptions,
+		} as T & { type: "procedure" };
+	}
+}
+
+/**
+ * Subscription type class.
+ */
+class LxSubscription<
+	T extends SubscriptionOptions,
+> extends BaseLexiconItem<T & { type: "subscription" }> {
+	public json: T & { type: "subscription" };
+
+	constructor(options?: T) {
+		super();
+		// Serialize nested params and message if they have .json
+		const serializedOptions = options
+			? {
+					...options,
+					parameters: (options.parameters as any)?.json ?? options.parameters,
+					message: options.message
+						? {
+								...options.message,
+								schema: (options.message.schema as any)?.json ?? options.message.schema,
+							}
+						: undefined,
+				}
+			: {};
+		this.json = {
+			type: "subscription",
+			...serializedOptions,
+		} as T & { type: "subscription" };
+	}
+}
+
 class Namespace<ID extends string, D extends LexiconNamespace["defs"]> {
 	public json: { lexicon: 1; id: ID; defs: D };
 	constructor(
 		public id: ID,
 		public defs: D,
 	) {
+		// Serialize defs if they contain class instances
+		const serializedDefs = Object.fromEntries(
+			Object.entries(defs).map(([key, value]) => [
+				key,
+				(value as any)?.json ?? value,
+			]),
+		) as D;
+
 		this.json = {
 			lexicon: 1,
 			id,
-			defs,
+			defs: serializedDefs,
 		};
 	}
 
@@ -333,99 +726,67 @@ export const lx = {
 	 * Creates a null type.
 	 * @see https://atproto.com/specs/lexicon#null
 	 */
-	null(
-		options?: LexiconItemCommonOptions,
-	): { type: "null" } & LexiconItemCommonOptions {
-		return {
-			type: "null",
-			...options,
-		};
+	null(options?: LexiconItemCommonOptions): LxNull {
+		return new LxNull(options);
 	},
 	/**
 	 * Creates a boolean type with optional constraints.
 	 * @see https://atproto.com/specs/lexicon#boolean
 	 */
-	boolean<T extends BooleanOptions>(options?: T): T & { type: "boolean" } {
-		return {
-			type: "boolean",
-			...options,
-		} as T & { type: "boolean" };
+	boolean<T extends BooleanOptions>(options?: T): LxBoolean<T> {
+		return new LxBoolean(options);
 	},
 	/**
 	 * Creates an integer type with optional min/max and enum constraints.
 	 * @see https://atproto.com/specs/lexicon#integer
 	 */
-	integer<T extends IntegerOptions>(options?: T): T & { type: "integer" } {
-		return {
-			type: "integer",
-			...options,
-		} as T & { type: "integer" };
+	integer<T extends IntegerOptions>(options?: T): LxInteger<T> {
+		return new LxInteger(options);
 	},
 	/**
 	 * Creates a string type with optional format, length, and value constraints.
 	 * @see https://atproto.com/specs/lexicon#string
 	 */
-	string<T extends StringOptions>(options?: T): T & { type: "string" } {
-		return {
-			type: "string",
-			...options,
-		} as T & { type: "string" };
+	string<T extends StringOptions>(options?: T): LxString<T> {
+		return new LxString(options);
 	},
 	/**
 	 * Creates an unknown type for flexible, unvalidated objects.
 	 * @see https://atproto.com/specs/lexicon#unknown
 	 */
-	unknown(
-		options?: LexiconItemCommonOptions,
-	): { type: "unknown" } & LexiconItemCommonOptions {
-		return {
-			type: "unknown",
-			...options,
-		};
+	unknown(options?: LexiconItemCommonOptions): LxUnknown {
+		return new LxUnknown(options);
 	},
 	/**
 	 * Creates a bytes type for arbitrary byte arrays.
 	 * @see https://atproto.com/specs/lexicon#bytes
 	 */
-	bytes<T extends BytesOptions>(options?: T): T & { type: "bytes" } {
-		return {
-			type: "bytes",
-			...options,
-		} as T & { type: "bytes" };
+	bytes<T extends BytesOptions>(options?: T): LxBytes<T> {
+		return new LxBytes(options);
 	},
 	/**
 	 * Creates a CID link reference to content-addressed data.
 	 * @see https://atproto.com/specs/lexicon#cid-link
 	 */
-	cidLink<Link extends string>(link: Link): { type: "cid-link"; $link: Link } {
-		return {
-			type: "cid-link",
-			$link: link,
-		};
+	cidLink<Link extends string>(link: Link): LxCidLink<Link> {
+		return new LxCidLink(link);
 	},
 	/**
 	 * Creates a blob type for binary data with MIME type constraints.
 	 * @see https://atproto.com/specs/lexicon#blob
 	 */
-	blob<T extends BlobOptions>(options?: T): T & { type: "blob" } {
-		return {
-			type: "blob",
-			...options,
-		} as T & { type: "blob" };
+	blob<T extends BlobOptions>(options?: T): LxBlob<T> {
+		return new LxBlob(options);
 	},
 	/**
 	 * Creates an array type with item schema and length constraints.
 	 * @see https://atproto.com/specs/lexicon#array
 	 */
 	array<Items extends LexiconItem, Options extends ArrayOptions>(
-		items: Items,
+		items: Items | BaseLexiconItem<Items>,
 		options?: Options,
-	): Options & { type: "array"; items: Items } {
-		return {
-			type: "array",
-			items,
-			...options,
-		} as Options & { type: "array"; items: Items };
+	): LxArray<Items, Options> {
+		return new LxArray(items, options);
 	},
 	/**
 	 * Creates a token type for symbolic values in unions.
@@ -433,8 +794,8 @@ export const lx = {
 	 */
 	token<Description extends string>(
 		description: Description,
-	): { type: "token"; description: Description } {
-		return { type: "token", description };
+	): LxToken<Description> {
+		return new LxToken(description);
 	},
 	/**
 	 * Creates a reference to another schema definition.
@@ -443,12 +804,8 @@ export const lx = {
 	ref<Ref extends string>(
 		ref: Ref,
 		options?: LexiconItemCommonOptions,
-	): LexiconItemCommonOptions & { type: "ref"; ref: Ref } {
-		return {
-			type: "ref",
-			ref,
-			...options,
-		} as LexiconItemCommonOptions & { type: "ref"; ref: Ref };
+	): LxRef<Ref> {
+		return new LxRef(ref, options);
 	},
 	/**
 	 * Creates a union type for multiple possible type variants.
@@ -457,45 +814,22 @@ export const lx = {
 	union<const Refs extends readonly string[], Options extends UnionOptions>(
 		refs: Refs,
 		options?: Options,
-	): Options & { type: "union"; refs: Refs } {
-		return {
-			type: "union",
-			refs,
-			...options,
-		} as Options & { type: "union"; refs: Refs };
+	): LxUnion<Refs, Options> {
+		return new LxUnion(refs, options);
 	},
 	/**
 	 * Creates a record type for repository records.
 	 * @see https://atproto.com/specs/lexicon#record
 	 */
-	record<T extends RecordOptions>(options: T): T & { type: "record" } {
-		return {
-			type: "record",
-			...options,
-		};
+	record<T extends RecordOptions>(options: T): LxRecord<T> {
+		return new LxRecord(options);
 	},
 	/**
 	 * Creates an object type with defined properties.
 	 * @see https://atproto.com/specs/lexicon#object
 	 */
-	object<T extends ObjectProperties>(options: T): ObjectResult<T> {
-		const required = Object.keys(options).filter(
-			(key) => options[key].required,
-		);
-		const nullable = Object.keys(options).filter(
-			(key) => options[key].nullable,
-		);
-		const result: ObjectResult<T> = {
-			type: "object",
-			properties: options,
-		};
-		if (required.length > 0) {
-			result.required = required;
-		}
-		if (nullable.length > 0) {
-			result.nullable = nullable;
-		}
-		return result;
+	object<T extends ObjectProperties>(properties: T): LxObject<T> {
+		return new LxObject(properties);
 	},
 	/**
 	 * Creates a params type for query string parameters.
@@ -503,56 +837,29 @@ export const lx = {
 	 */
 	params<Properties extends ParamsProperties>(
 		properties: Properties,
-	): ParamsResult<Properties> {
-		const required = Object.keys(properties).filter(
-			(key) => properties[key].required,
-		);
-		const result: {
-			type: "params";
-			properties: Properties;
-			required?: string[];
-		} = {
-			type: "params",
-			properties,
-		};
-		if (required.length > 0) {
-			result.required = required;
-		}
-		return result;
+	): LxParams<Properties> {
+		return new LxParams(properties);
 	},
 	/**
 	 * Creates a query endpoint definition (HTTP GET).
 	 * @see https://atproto.com/specs/lexicon#query
 	 */
-	query<T extends QueryOptions>(options?: T): T & { type: "query" } {
-		return {
-			type: "query",
-			...options,
-		} as T & { type: "query" };
+	query<T extends QueryOptions>(options?: T): LxQuery<T> {
+		return new LxQuery(options);
 	},
 	/**
 	 * Creates a procedure endpoint definition (HTTP POST).
 	 * @see https://atproto.com/specs/lexicon#procedure
 	 */
-	procedure<T extends ProcedureOptions>(
-		options?: T,
-	): T & { type: "procedure" } {
-		return {
-			type: "procedure",
-			...options,
-		} as T & { type: "procedure" };
+	procedure<T extends ProcedureOptions>(options?: T): LxProcedure<T> {
+		return new LxProcedure(options);
 	},
 	/**
 	 * Creates a subscription endpoint definition (WebSocket).
 	 * @see https://atproto.com/specs/lexicon#subscription
 	 */
-	subscription<T extends SubscriptionOptions>(
-		options?: T,
-	): T & { type: "subscription" } {
-		return {
-			type: "subscription",
-			...options,
-		} as T & { type: "subscription" };
+	subscription<T extends SubscriptionOptions>(options?: T): LxSubscription<T> {
+		return new LxSubscription(options);
 	},
 	/**
 	 * Creates a lexicon namespace document.
