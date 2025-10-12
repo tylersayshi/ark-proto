@@ -319,8 +319,8 @@ class Namespace<ID extends string, D extends LexiconNamespace["defs"]> {
 	}
 
 	get infer(): InferNS<typeof this> {
-		// TODO runtime convert json to inferred type
-		return null as unknown as InferNS<typeof this>;
+		// TODO this could return the runtime inferred type if we need it
+		return {} as InferNS<typeof this>;
 	}
 }
 

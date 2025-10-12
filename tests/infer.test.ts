@@ -67,3 +67,26 @@ test("InferObject handles nullable fields", () => {
 		"{ main: { nullable?: string | undefined } }",
 	);
 });
+
+test("InferNS handles basic namespace", () => {
+	const namespace = lx.namespace("com.example.post", {
+		main: lx.record({
+			key: "tid",
+			record: lx.object({
+				text: lx.string({ required: true }),
+				createdAt: lx.string({ required: true, format: "datetime" }),
+				likes: lx.integer(),
+				tags: lx.array(lx.string(), { maxLength: 5 }),
+			}),
+		}),
+	});
+
+	attest(namespace.infer).type.toString.snap(`{
+  main: {
+    createdAt?: string | undefined
+    tags?: string[] | undefined
+    text?: string | undefined
+    likes?: number | undefined
+  }
+}`);
+});

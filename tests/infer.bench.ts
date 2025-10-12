@@ -1,6 +1,6 @@
 import { bench } from "@ark/attest";
-import type { InferNS } from "../infer.ts";
-import { lx } from "../lib.ts";
+import type { InferNS } from "../src/infer.ts";
+import { lx } from "../src/lib.ts";
 
 bench("InferNS with simple object", () => {
 	const schema = lx.namespace("test.simple", {
