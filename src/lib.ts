@@ -1,4 +1,5 @@
-// deno-lint-ignore-file ban-types
+import type { InferNS } from "./infer.ts";
+
 /** @see https://atproto.com/specs/lexicon#overview-of-types */
 type LexiconType =
 	// Concrete types
@@ -304,6 +305,25 @@ interface SubscriptionOptions {
 	errors?: ErrorDef[];
 }
 
+class Namespace<ID extends string, D extends LexiconNamespace["defs"]> {
+	public json: { lexicon: 1; id: ID; defs: D };
+	constructor(
+		public id: ID,
+		public defs: D,
+	) {
+		this.json = {
+			lexicon: 1,
+			id,
+			defs,
+		};
+	}
+
+	get infer(): InferNS<typeof this> {
+		// TODO runtime convert json to inferred type
+		return null as unknown as InferNS<typeof this>;
+	}
+}
+
 /**
  * Main API for creating lexicon schemas.
  * @see https://atproto.com/specs/lexicon
@@ -541,11 +561,7 @@ export const lx = {
 	namespace<ID extends string, D extends LexiconNamespace["defs"]>(
 		id: ID,
 		defs: D,
-	): { lexicon: 1; id: ID; defs: D } {
-		return {
-			lexicon: 1,
-			id,
-			defs,
-		};
+	) {
+		return new Namespace(id, defs);
 	},
 };
