@@ -100,3 +100,10 @@ type InferDefs<T extends Record<string, unknown>> = Prettify<{
 
 export type InferNS<T extends { id: string; defs: Record<string, unknown> }> =
 	InferDefs<T["defs"]>;
+
+/**
+ * Extracts the JSON representation from a type.
+ * If the type has a `json` property, returns that property's type.
+ * Otherwise, returns the type as-is.
+ */
+export type ExtractJson<T> = T extends { json: infer Json } ? Json : T;

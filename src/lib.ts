@@ -1,29 +1,4 @@
-import type { InferNS, InferType, Prettify } from "./infer.ts";
-
-/** @see https://atproto.com/specs/lexicon#overview-of-types */
-type LexiconType =
-	// Concrete types
-	| "null"
-	| "boolean"
-	| "integer"
-	| "string"
-	| "bytes"
-	| "cid-link"
-	| "blob"
-	// Container types
-	| "array"
-	| "object"
-	| "params"
-	// Meta types
-	| "token"
-	| "ref"
-	| "union"
-	| "unknown"
-	// Primary types
-	| "record"
-	| "query"
-	| "procedure"
-	| "subscription";
+import type { ExtractJson, InferNS, InferType, Prettify } from "./infer.ts";
 
 /**
  * Common options available for lexicon items.
@@ -704,18 +679,22 @@ class LxSubscription<T extends SubscriptionOptions> extends BaseLexiconItem<
 }
 
 class Namespace<ID extends string, D extends LexiconNamespace["defs"]> {
-	public json: { lexicon: 1; id: ID; defs: D };
+	public json: {
+		lexicon: 1;
+		id: ID;
+		defs: { [K in keyof D]: ExtractJson<D[K]> };
+	};
 	constructor(
 		public id: ID,
 		public defs: D,
 	) {
 		// Serialize defs if they contain class instances
 		const serializedDefs = Object.fromEntries(
-			Object.entries(defs).map(([key, value]) => [
-				key,
-				(value as any)?.json ?? value,
-			]),
-		) as D;
+			Object.entries(defs).map(([key, value]) => {
+				const item = value as BaseLexiconItem | Record<string, unknown>;
+				return [key, "json" in item ? item.json : item];
+			}),
+		) as { [K in keyof D]: ExtractJson<D[K]> };
 
 		this.json = {
 			lexicon: 1,
