@@ -68,7 +68,10 @@ test("lx.string() with maxLength", () => {
 
 test("lx.string() with enum", () => {
 	const result = lx.string({ enum: ["light", "dark", "auto"] });
-	expect(result.json).toEqual({ type: "string", enum: ["light", "dark", "auto"] });
+	expect(result.json).toEqual({
+		type: "string",
+		enum: ["light", "dark", "auto"],
+	});
 });
 
 test("lx.unknown()", () => {
@@ -385,7 +388,10 @@ test("lx.query() basic", () => {
 
 test("lx.query() with description", () => {
 	const result = lx.query({ description: "Search for actors" });
-	expect(result.json).toEqual({ type: "query", description: "Search for actors" });
+	expect(result.json).toEqual({
+		type: "query",
+		description: "Search for actors",
+	});
 });
 
 test("lx.query() with parameters", () => {

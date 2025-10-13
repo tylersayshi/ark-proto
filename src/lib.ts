@@ -1,4 +1,4 @@
-import type { InferNS, InferType } from "./infer.ts";
+import type { InferNS, InferType, Prettify } from "./infer.ts";
 
 /** @see https://atproto.com/specs/lexicon#overview-of-types */
 type LexiconType =
@@ -37,20 +37,10 @@ interface LexiconItemCommonOptions {
 }
 
 /**
- * Base interface for all lexicon items.
- * @see https://atproto.com/specs/lexicon#overview-of-types
- */
-interface LexiconItem extends LexiconItemCommonOptions {
-	type: LexiconType;
-}
-
-/**
  * Definition in a lexicon namespace.
  * @see https://atproto.com/specs/lexicon#lexicon-document
  */
-interface Def {
-	type: LexiconType;
-}
+type Def = BaseLexiconItem;
 
 /**
  * Lexicon namespace document structure.
@@ -171,7 +161,7 @@ interface RecordOptions {
 	/** Record key strategy: "self" for self-describing or "tid" for timestamp IDs */
 	key: "self" | "tid";
 	/** Object schema defining the record structure */
-	record: { type: "object" };
+	record: LxObject<ObjectProperties>;
 	/** Human-readable description */
 	description?: string;
 }
@@ -189,7 +179,7 @@ interface UnionOptions extends LexiconItemCommonOptions {
  * Map of property names to their lexicon item definitions.
  * @see https://atproto.com/specs/lexicon#object
  */
-type ObjectProperties = Record<string, LexiconItem>;
+type ObjectProperties = Record<string, Def>;
 
 /**
  * Resulting object schema with required and nullable fields extracted.
@@ -209,18 +199,21 @@ interface ObjectResult<T extends ObjectProperties> {
  * Map of parameter names to their lexicon item definitions.
  * @see https://atproto.com/specs/lexicon#params
  */
-type ParamsProperties = Record<string, LexiconItem>;
+type ParamsProperties = Record<string, Def>;
 
 /**
  * Resulting params schema with required fields extracted.
  * @see https://atproto.com/specs/lexicon#params
  */
 interface ParamsResult<T extends ParamsProperties> {
-	type: "params";
-	/** Parameter definitions */
-	properties: T;
-	/** List of required parameter names */
-	required?: string[];
+	json: {
+		type: "params";
+		/** Parameter definitions */
+		properties: T;
+		/** List of required parameter names */
+		required?: string[];
+	};
+	infer: InferType<T & { type: "params" }>;
 }
 
 /**
@@ -233,7 +226,7 @@ interface BodySchema {
 	/** Human-readable description */
 	description?: string;
 	/** Object schema defining the body structure */
-	schema?: ObjectResult<ObjectProperties>;
+	schema?: LxObject<ObjectProperties>;
 }
 
 /**
@@ -255,7 +248,7 @@ interface QueryOptions {
 	/** Human-readable description */
 	description?: string;
 	/** Query string parameters */
-	parameters?: ParamsResult<ParamsProperties>;
+	parameters?: LxParams<ParamsProperties>;
 	/** Response body schema */
 	output?: BodySchema;
 	/** Possible error responses */
@@ -270,7 +263,7 @@ interface ProcedureOptions {
 	/** Human-readable description */
 	description?: string;
 	/** Query string parameters */
-	parameters?: ParamsResult<ParamsProperties>;
+	parameters?: LxParams<ParamsProperties>;
 	/** Request body schema */
 	input?: BodySchema;
 	/** Response body schema */
@@ -287,7 +280,7 @@ interface MessageSchema {
 	/** Human-readable description */
 	description?: string;
 	/** Union of possible message types */
-	schema: { type: "union"; refs: readonly string[] };
+	schema: LxUnion<readonly string[], UnionOptions>;
 }
 
 /**
@@ -298,7 +291,7 @@ interface SubscriptionOptions {
 	/** Human-readable description */
 	description?: string;
 	/** Query string parameters */
-	parameters?: ParamsResult<ParamsProperties>;
+	parameters?: LxParams<ParamsProperties>;
 	/** Message schema for events */
 	message?: MessageSchema;
 	/** Possible error responses */
@@ -308,7 +301,8 @@ interface SubscriptionOptions {
 /**
  * Base class for all lexicon items with .json and .infer properties.
  */
-abstract class BaseLexiconItem<Json> {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+abstract class BaseLexiconItem<Json = any> {
 	abstract json: Json;
 
 	get infer(): InferType<Json> {
@@ -319,7 +313,9 @@ abstract class BaseLexiconItem<Json> {
 /**
  * Null type class.
  */
-class LxNull extends BaseLexiconItem<{ type: "null" } & LexiconItemCommonOptions> {
+class LxNull extends BaseLexiconItem<
+	{ type: "null" } & LexiconItemCommonOptions
+> {
 	public json: { type: "null" } & LexiconItemCommonOptions;
 
 	constructor(options?: LexiconItemCommonOptions) {
@@ -331,37 +327,45 @@ class LxNull extends BaseLexiconItem<{ type: "null" } & LexiconItemCommonOptions
 /**
  * Boolean type class.
  */
-class LxBoolean<
-	Options extends BooleanOptions,
-> extends BaseLexiconItem<Options & { type: "boolean" }> {
+class LxBoolean<Options extends BooleanOptions> extends BaseLexiconItem<
+	Options & { type: "boolean" }
+> {
 	public json: Options & { type: "boolean" };
 
 	constructor(options?: Options) {
 		super();
-		this.json = { type: "boolean", ...options } as Options & { type: "boolean" };
+		this.json = { type: "boolean", ...options } as Options & {
+			type: "boolean";
+		};
 	}
 }
 
 /**
  * Integer type class.
  */
-class LxInteger<
-	Options extends IntegerOptions,
-> extends BaseLexiconItem<Options & { type: "integer" }> {
+class LxInteger<Options extends IntegerOptions> extends BaseLexiconItem<
+	Options & { type: "integer" }
+> {
 	public json: Options & { type: "integer" };
 
 	constructor(options?: Options) {
 		super();
-		this.json = { type: "integer", ...options } as Options & { type: "integer" };
+		this.json = { type: "integer", ...options } as Options & {
+			type: "integer";
+		};
+	}
+
+	get infer(): InferType<Options & { type: "integer" }> {
+		return {} as InferType<Options & { type: "integer" }>;
 	}
 }
 
 /**
  * String type class.
  */
-class LxString<
-	Options extends StringOptions,
-> extends BaseLexiconItem<Options & { type: "string" }> {
+class LxString<Options extends StringOptions> extends BaseLexiconItem<
+	Options & { type: "string" }
+> {
 	public json: Options & { type: "string" };
 
 	constructor(options?: Options) {
@@ -387,9 +391,9 @@ class LxUnknown extends BaseLexiconItem<
 /**
  * Bytes type class.
  */
-class LxBytes<
-	Options extends BytesOptions,
-> extends BaseLexiconItem<Options & { type: "bytes" }> {
+class LxBytes<Options extends BytesOptions> extends BaseLexiconItem<
+	Options & { type: "bytes" }
+> {
 	public json: Options & { type: "bytes" };
 
 	constructor(options?: Options) {
@@ -416,9 +420,9 @@ class LxCidLink<Link extends string> extends BaseLexiconItem<{
 /**
  * Blob type class.
  */
-class LxBlob<
-	Options extends BlobOptions,
-> extends BaseLexiconItem<Options & { type: "blob" }> {
+class LxBlob<Options extends BlobOptions> extends BaseLexiconItem<
+	Options & { type: "blob" }
+> {
 	public json: Options & { type: "blob" };
 
 	constructor(options?: Options) {
@@ -431,12 +435,12 @@ class LxBlob<
  * Array type class.
  */
 class LxArray<
-	Items extends LexiconItem,
+	Items extends Def["json"],
 	Options extends ArrayOptions,
 > extends BaseLexiconItem<Options & { type: "array"; items: Items }> {
 	public json: Options & { type: "array"; items: Items };
 
-	constructor(items: Items | BaseLexiconItem<Items>, options?: Options) {
+	constructor(items: Def | Items, options?: Options) {
 		super();
 		// Serialize items using .json if available
 		const serializedItems = (items as any)?.json ?? items;
@@ -527,6 +531,10 @@ class LxParams<T extends ParamsProperties> extends BaseLexiconItem<
 
 		this.json = result;
 	}
+
+	get infer(): InferType<T & { type: "params" }> {
+		return {} as InferType<T & { type: "params" }>;
+	}
 }
 
 /**
@@ -547,9 +555,7 @@ class LxToken<Description extends string> extends BaseLexiconItem<{
 /**
  * Ref type class.
  */
-class LxRef<
-	Ref extends string,
-> extends BaseLexiconItem<
+class LxRef<Ref extends string> extends BaseLexiconItem<
 	LexiconItemCommonOptions & { type: "ref"; ref: Ref }
 > {
 	public json: LexiconItemCommonOptions & { type: "ref"; ref: Ref };
@@ -581,9 +587,9 @@ class LxUnion<
 /**
  * Record type class.
  */
-class LxRecord<
-	T extends RecordOptions,
-> extends BaseLexiconItem<T & { type: "record" }> {
+class LxRecord<T extends RecordOptions> extends BaseLexiconItem<
+	T & { type: "record" }
+> {
 	public json: T & { type: "record" };
 
 	constructor(options: T) {
@@ -600,9 +606,9 @@ class LxRecord<
 /**
  * Query type class.
  */
-class LxQuery<
-	T extends QueryOptions,
-> extends BaseLexiconItem<T & { type: "query" }> {
+class LxQuery<T extends QueryOptions> extends BaseLexiconItem<
+	T & { type: "query" }
+> {
 	public json: T & { type: "query" };
 
 	constructor(options?: T) {
@@ -615,21 +621,24 @@ class LxQuery<
 					output: options.output
 						? {
 								...options.output,
-								schema: (options.output.schema as any)?.json ?? options.output.schema,
+								schema:
+									(options.output.schema as any)?.json ?? options.output.schema,
 							}
 						: undefined,
 				}
 			: {};
-		this.json = { type: "query", ...serializedOptions } as T & { type: "query" };
+		this.json = { type: "query", ...serializedOptions } as T & {
+			type: "query";
+		};
 	}
 }
 
 /**
  * Procedure type class.
  */
-class LxProcedure<
-	T extends ProcedureOptions,
-> extends BaseLexiconItem<T & { type: "procedure" }> {
+class LxProcedure<T extends ProcedureOptions> extends BaseLexiconItem<
+	T & { type: "procedure" }
+> {
 	public json: T & { type: "procedure" };
 
 	constructor(options?: T) {
@@ -642,13 +651,15 @@ class LxProcedure<
 					input: options.input
 						? {
 								...options.input,
-								schema: (options.input.schema as any)?.json ?? options.input.schema,
+								schema:
+									(options.input.schema as any)?.json ?? options.input.schema,
 							}
 						: undefined,
 					output: options.output
 						? {
 								...options.output,
-								schema: (options.output.schema as any)?.json ?? options.output.schema,
+								schema:
+									(options.output.schema as any)?.json ?? options.output.schema,
 							}
 						: undefined,
 				}
@@ -663,9 +674,9 @@ class LxProcedure<
 /**
  * Subscription type class.
  */
-class LxSubscription<
-	T extends SubscriptionOptions,
-> extends BaseLexiconItem<T & { type: "subscription" }> {
+class LxSubscription<T extends SubscriptionOptions> extends BaseLexiconItem<
+	T & { type: "subscription" }
+> {
 	public json: T & { type: "subscription" };
 
 	constructor(options?: T) {
@@ -678,7 +689,9 @@ class LxSubscription<
 					message: options.message
 						? {
 								...options.message,
-								schema: (options.message.schema as any)?.json ?? options.message.schema,
+								schema:
+									(options.message.schema as any)?.json ??
+									options.message.schema,
 							}
 						: undefined,
 				}
@@ -740,14 +753,14 @@ export const lx = {
 	 * Creates an integer type with optional min/max and enum constraints.
 	 * @see https://atproto.com/specs/lexicon#integer
 	 */
-	integer<T extends IntegerOptions>(options?: T): LxInteger<T> {
+	integer<T extends IntegerOptions>(options?: T): Prettify<LxInteger<T>> {
 		return new LxInteger(options);
 	},
 	/**
 	 * Creates a string type with optional format, length, and value constraints.
 	 * @see https://atproto.com/specs/lexicon#string
 	 */
-	string<T extends StringOptions>(options?: T): LxString<T> {
+	string<T extends StringOptions>(options?: T): Prettify<LxString<T>> {
 		return new LxString(options);
 	},
 	/**
@@ -782,8 +795,8 @@ export const lx = {
 	 * Creates an array type with item schema and length constraints.
 	 * @see https://atproto.com/specs/lexicon#array
 	 */
-	array<Items extends LexiconItem, Options extends ArrayOptions>(
-		items: Items | BaseLexiconItem<Items>,
+	array<Items extends Def["json"], Options extends ArrayOptions>(
+		items: Def | Items,
 		options?: Options,
 	): LxArray<Items, Options> {
 		return new LxArray(items, options);
@@ -837,7 +850,7 @@ export const lx = {
 	 */
 	params<Properties extends ParamsProperties>(
 		properties: Properties,
-	): LxParams<Properties> {
+	): Prettify<LxParams<Properties>> {
 		return new LxParams(properties);
 	},
 	/**

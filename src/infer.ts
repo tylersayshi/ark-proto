@@ -90,7 +90,7 @@ type InferRecord<T> = T extends { record: infer R }
 			: unknown
 	: unknown;
 
-type Prettify<T> = {
+export type Prettify<T> = {
 	[K in keyof T]: T[K];
 } & {};
 
