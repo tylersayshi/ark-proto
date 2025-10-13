@@ -861,7 +861,7 @@ test("app.bsky.actor.defs - full namespace", () => {
 	});
 
 	expect(actorDefs.json.lexicon).toEqual(1);
-	expect(actorDefs.id).toEqual("app.bsky.actor.defs");
+	expect(actorDefs.json.id).toEqual("app.bsky.actor.defs");
 	expect(actorDefs.json.defs.profileViewBasic.type).toEqual("object");
 	expect(actorDefs.json.defs.viewerState.type).toEqual("object");
 });

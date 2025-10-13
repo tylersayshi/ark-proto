@@ -1,15 +1,12 @@
-import type { ExtractJson, InferNS, InferType, Prettify } from "./infer.ts";
-
-/**
- * Common options available for lexicon items.
- * @see https://atproto.com/specs/lexicon#string-formats
- */
-interface LexiconItemCommonOptions {
-	/** Indicates this field must be provided */
-	required?: boolean;
-	/** Indicates this field can be explicitly set to null */
-	nullable?: boolean;
-}
+/* eslint-disable @typescript-eslint/no-empty-object-type */
+import type {
+	ExtractJson,
+	InferDefs,
+	Prettify,
+	InferRecord,
+	InferObject,
+	InferArray,
+} from "./infer.ts";
 
 /**
  * Definition in a lexicon namespace.
@@ -32,7 +29,7 @@ interface LexiconNamespace {
  * String type options.
  * @see https://atproto.com/specs/lexicon#string
  */
-interface StringOptions extends LexiconItemCommonOptions {
+interface StringOptions {
 	/**
 	 * Semantic string format constraint.
 	 * @see https://atproto.com/specs/lexicon#string-formats
@@ -71,7 +68,7 @@ interface StringOptions extends LexiconItemCommonOptions {
  * Boolean type options.
  * @see https://atproto.com/specs/lexicon#boolean
  */
-interface BooleanOptions extends LexiconItemCommonOptions {
+interface BooleanOptions {
 	/** Default value if not provided */
 	default?: boolean;
 	/** Fixed, unchangeable value */
@@ -82,7 +79,7 @@ interface BooleanOptions extends LexiconItemCommonOptions {
  * Integer type options.
  * @see https://atproto.com/specs/lexicon#integer
  */
-interface IntegerOptions extends LexiconItemCommonOptions {
+interface IntegerOptions {
 	/** Minimum allowed value (inclusive) */
 	minimum?: number;
 	/** Maximum allowed value (inclusive) */
@@ -99,7 +96,7 @@ interface IntegerOptions extends LexiconItemCommonOptions {
  * Bytes type options for arbitrary byte arrays.
  * @see https://atproto.com/specs/lexicon#bytes
  */
-interface BytesOptions extends LexiconItemCommonOptions {
+interface BytesOptions {
 	/** Minimum byte array length */
 	minLength?: number;
 	/** Maximum byte array length */
@@ -110,7 +107,7 @@ interface BytesOptions extends LexiconItemCommonOptions {
  * Blob type options for binary data with MIME types.
  * @see https://atproto.com/specs/lexicon#blob
  */
-interface BlobOptions extends LexiconItemCommonOptions {
+interface BlobOptions {
 	/** Allowed MIME types (e.g., ["image/png", "image/jpeg"]) */
 	accept?: string[];
 	/** Maximum blob size in bytes */
@@ -121,7 +118,7 @@ interface BlobOptions extends LexiconItemCommonOptions {
  * Array type options.
  * @see https://atproto.com/specs/lexicon#array
  */
-interface ArrayOptions extends LexiconItemCommonOptions {
+interface ArrayOptions {
 	/** Minimum array length */
 	minLength?: number;
 	/** Maximum array length */
@@ -145,7 +142,7 @@ interface RecordOptions {
  * Union type options for multiple possible types.
  * @see https://atproto.com/specs/lexicon#union
  */
-interface UnionOptions extends LexiconItemCommonOptions {
+interface UnionOptions {
 	/** If true, only listed refs are allowed; if false, additional types may be added */
 	closed?: boolean;
 }
@@ -276,36 +273,41 @@ interface SubscriptionOptions {
 /**
  * Base class for all lexicon items with .json and .infer properties.
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unnecessary-type-parameters
 abstract class BaseLexiconItem<Json = any> {
 	abstract json: Json;
-
-	get infer(): InferType<Json> {
-		return {} as InferType<Json>;
-	}
+	public infer: unknown = null as unknown;
 }
 
 /**
  * Null type class.
  */
-class LxNull extends BaseLexiconItem<
-	{ type: "null" } & LexiconItemCommonOptions
-> {
-	public json: { type: "null" } & LexiconItemCommonOptions;
+class LxNull extends BaseLexiconItem<{ type: "null" }> {
+	public json: { type: "null" };
+	public infer = null;
 
-	constructor(options?: LexiconItemCommonOptions) {
+	constructor() {
 		super();
-		this.json = { type: "null", ...options };
+		this.json = { type: "null" };
+	}
+
+	nullable(): typeof this & { _nullable: true } {
+		return this as typeof this & { _nullable: true };
+	}
+
+	required(): typeof this & { _required: true } {
+		return this as typeof this & { _required: true };
 	}
 }
 
 /**
  * Boolean type class.
  */
-class LxBoolean<Options extends BooleanOptions> extends BaseLexiconItem<
+class LxBoolean<Options extends BooleanOptions = {}> extends BaseLexiconItem<
 	Options & { type: "boolean" }
 > {
 	public json: Options & { type: "boolean" };
+	public infer = null as unknown as boolean;
 
 	constructor(options?: Options) {
 		super();
@@ -313,15 +315,24 @@ class LxBoolean<Options extends BooleanOptions> extends BaseLexiconItem<
 			type: "boolean";
 		};
 	}
+
+	nullable(): typeof this & { _nullable: true } {
+		return this as typeof this & { _nullable: true };
+	}
+
+	required(): typeof this & { _required: true } {
+		return this as typeof this & { _required: true };
+	}
 }
 
 /**
  * Integer type class.
  */
-class LxInteger<Options extends IntegerOptions> extends BaseLexiconItem<
+class LxInteger<Options extends IntegerOptions = {}> extends BaseLexiconItem<
 	Options & { type: "integer" }
 > {
 	public json: Options & { type: "integer" };
+	public infer = null as unknown as number;
 
 	constructor(options?: Options) {
 		super();
@@ -330,100 +341,168 @@ class LxInteger<Options extends IntegerOptions> extends BaseLexiconItem<
 		};
 	}
 
-	get infer(): InferType<Options & { type: "integer" }> {
-		return {} as InferType<Options & { type: "integer" }>;
+	nullable(): typeof this & { _nullable: true } {
+		return this as typeof this & { _nullable: true };
+	}
+
+	required(): typeof this & { _required: true } {
+		return this as typeof this & { _required: true };
 	}
 }
 
 /**
  * String type class.
  */
-class LxString<Options extends StringOptions> extends BaseLexiconItem<
+class LxString<Options extends StringOptions = {}> extends BaseLexiconItem<
 	Options & { type: "string" }
 > {
 	public json: Options & { type: "string" };
+	public infer = null as unknown as string;
 
 	constructor(options?: Options) {
 		super();
 		this.json = { type: "string", ...options } as Options & { type: "string" };
+	}
+
+	nullable(): typeof this & { _nullable: true } {
+		return this as typeof this & { _nullable: true };
+	}
+
+	required(): typeof this & { _required: true } {
+		return this as typeof this & { _required: true };
 	}
 }
 
 /**
  * Unknown type class.
  */
-class LxUnknown extends BaseLexiconItem<
-	{ type: "unknown" } & LexiconItemCommonOptions
-> {
-	public json: { type: "unknown" } & LexiconItemCommonOptions;
+class LxUnknown extends BaseLexiconItem<{ type: "unknown" }> {
+	public json: { type: "unknown" };
+	public infer: unknown = null;
 
-	constructor(options?: LexiconItemCommonOptions) {
+	constructor() {
 		super();
-		this.json = { type: "unknown", ...options };
+		this.json = { type: "unknown" };
+	}
+
+	nullable(): typeof this & { _nullable: true } {
+		return this as typeof this & { _nullable: true };
+	}
+
+	required(): typeof this & { _required: true } {
+		return this as typeof this & { _required: true };
 	}
 }
 
 /**
  * Bytes type class.
  */
-class LxBytes<Options extends BytesOptions> extends BaseLexiconItem<
+class LxBytes<Options extends BytesOptions = {}> extends BaseLexiconItem<
 	Options & { type: "bytes" }
 > {
 	public json: Options & { type: "bytes" };
+	public infer: Uint8Array = null as unknown as Uint8Array;
 
 	constructor(options?: Options) {
 		super();
 		this.json = { type: "bytes", ...options } as Options & { type: "bytes" };
+	}
+
+	nullable(): typeof this & { _nullable: true } {
+		return this as typeof this & { _nullable: true };
+	}
+
+	required(): typeof this & { _required: true } {
+		return this as typeof this & { _required: true };
 	}
 }
 
 /**
  * CID Link type class.
  */
-class LxCidLink<Link extends string> extends BaseLexiconItem<{
+class LxCidLink<Link extends string = string> extends BaseLexiconItem<{
 	type: "cid-link";
 	$link: Link;
 }> {
 	public json: { type: "cid-link"; $link: Link };
+	public infer: string = null as unknown as string;
 
 	constructor(link: Link) {
 		super();
 		this.json = { type: "cid-link", $link: link };
+	}
+
+	nullable(): typeof this & { _nullable: true } {
+		return this as typeof this & { _nullable: true };
+	}
+
+	required(): typeof this & { _required: true } {
+		return this as typeof this & { _required: true };
 	}
 }
 
 /**
  * Blob type class.
  */
-class LxBlob<Options extends BlobOptions> extends BaseLexiconItem<
+class LxBlob<Options extends BlobOptions = {}> extends BaseLexiconItem<
 	Options & { type: "blob" }
 > {
 	public json: Options & { type: "blob" };
+	public infer: Blob = null as unknown as Blob;
 
 	constructor(options?: Options) {
 		super();
 		this.json = { type: "blob", ...options } as Options & { type: "blob" };
 	}
+
+	nullable(): typeof this & { _nullable: true } {
+		return this as typeof this & { _nullable: true };
+	}
+
+	required(): typeof this & { _required: true } {
+		return this as typeof this & { _required: true };
+	}
 }
+
+type Primitive =
+	| LxBoolean
+	| LxInteger
+	| LxString
+	| LxUnknown
+	| LxBytes
+	| LxCidLink
+	| LxNull
+	| LxBlob;
+// | LxArray<any, any>;
 
 /**
  * Array type class.
  */
 class LxArray<
-	Items extends Def["json"],
+	Items extends Def,
 	Options extends ArrayOptions,
 > extends BaseLexiconItem<Options & { type: "array"; items: Items }> {
 	public json: Options & { type: "array"; items: Items };
+	public infer: InferArray<{ type: "array"; items: Items }> =
+		null as unknown as InferArray<{ type: "array"; items: Items }>;
 
-	constructor(items: Def | Items, options?: Options) {
+	constructor(items: Items, options?: Options) {
 		super();
 		// Serialize items using .json if available
-		const serializedItems = (items as any)?.json ?? items;
 		this.json = {
 			type: "array",
-			items: serializedItems,
+			// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+			items: items.json,
 			...options,
 		} as Options & { type: "array"; items: Items };
+	}
+
+	nullable(): typeof this & { _nullable: true } {
+		return this as typeof this & { _nullable: true };
+	}
+
+	required(): typeof this & { _required: true } {
+		return this as typeof this & { _required: true };
 	}
 }
 
@@ -434,25 +513,14 @@ class LxObject<T extends ObjectProperties> extends BaseLexiconItem<
 	ObjectResult<T>
 > {
 	public json: ObjectResult<T>;
+	public infer: InferObject<T> = null as unknown as InferObject<T>;
 
 	constructor(properties: T) {
 		super();
-		// Extract required and nullable fields
-		const required = Object.keys(properties).filter((key) => {
-			const value = properties[key] as any;
-			return value?.json?.required ?? value?.required;
-		});
-		const nullable = Object.keys(properties).filter((key) => {
-			const value = properties[key] as any;
-			return value?.json?.nullable ?? value?.nullable;
-		});
+		// TODO nullable and optional handling is wrong
 
-		// Serialize properties using .json if available
 		const serializedProps = Object.fromEntries(
-			Object.entries(properties).map(([key, value]) => [
-				key,
-				(value as any)?.json ?? value,
-			]),
+			Object.entries(properties).map(([key, value]) => [key, value.json]),
 		) as T;
 
 		const result: ObjectResult<T> = {
@@ -460,14 +528,15 @@ class LxObject<T extends ObjectProperties> extends BaseLexiconItem<
 			properties: serializedProps,
 		};
 
-		if (required.length > 0) {
-			result.required = required;
-		}
-		if (nullable.length > 0) {
-			result.nullable = nullable;
-		}
-
 		this.json = result;
+	}
+
+	nullable(): typeof this & { _nullable: true } {
+		return this as typeof this & { _nullable: true };
+	}
+
+	required(): typeof this & { _required: true } {
+		return this as typeof this & { _required: true };
 	}
 }
 
@@ -520,24 +589,43 @@ class LxToken<Description extends string> extends BaseLexiconItem<{
 	description: Description;
 }> {
 	public json: { type: "token"; description: Description };
+	public infer: string = null as unknown as string;
 
 	constructor(description: Description) {
 		super();
 		this.json = { type: "token", description };
+	}
+
+	nullable(): typeof this & { _nullable: true } {
+		return this as typeof this & { _nullable: true };
+	}
+
+	required(): typeof this & { _required: true } {
+		return this as typeof this & { _required: true };
 	}
 }
 
 /**
  * Ref type class.
  */
-class LxRef<Ref extends string> extends BaseLexiconItem<
-	LexiconItemCommonOptions & { type: "ref"; ref: Ref }
-> {
-	public json: LexiconItemCommonOptions & { type: "ref"; ref: Ref };
+class LxRef<Ref extends string> extends BaseLexiconItem<{
+	type: "ref";
+	ref: Ref;
+}> {
+	public json: { type: "ref"; ref: Ref };
+	public infer: Ref = null as unknown as Ref;
 
-	constructor(ref: Ref, options?: LexiconItemCommonOptions) {
+	constructor(ref: Ref) {
 		super();
-		this.json = { type: "ref", ref, ...options };
+		this.json = { type: "ref", ref };
+	}
+
+	nullable(): typeof this & { _nullable: true } {
+		return this as typeof this & { _nullable: true };
+	}
+
+	required(): typeof this & { _required: true } {
+		return this as typeof this & { _required: true };
 	}
 }
 
@@ -557,6 +645,20 @@ class LxUnion<
 			refs: Refs;
 		};
 	}
+
+	get infer(): InferType<Options & { type: "union"; refs: Refs }> {
+		return null as unknown as InferType<
+			Options & { type: "union"; refs: Refs }
+		>;
+	}
+
+	nullable(): typeof this & { _nullable: true } {
+		return this as typeof this & { _nullable: true };
+	}
+
+	required(): typeof this & { _required: true } {
+		return this as typeof this & { _required: true };
+	}
 }
 
 /**
@@ -566,6 +668,7 @@ class LxRecord<T extends RecordOptions> extends BaseLexiconItem<
 	T & { type: "record" }
 > {
 	public json: T & { type: "record" };
+	public infer: InferRecord<T> = null as unknown as InferRecord<T>;
 
 	constructor(options: T) {
 		super();
@@ -606,6 +709,10 @@ class LxQuery<T extends QueryOptions> extends BaseLexiconItem<
 			type: "query";
 		};
 	}
+
+	get infer(): InferType<T & { type: "query" }> {
+		return null as unknown as InferType<T & { type: "query" }>;
+	}
 }
 
 /**
@@ -644,6 +751,10 @@ class LxProcedure<T extends ProcedureOptions> extends BaseLexiconItem<
 			...serializedOptions,
 		} as T & { type: "procedure" };
 	}
+
+	get infer(): InferType<T & { type: "procedure" }> {
+		return null as unknown as InferType<T & { type: "procedure" }>;
+	}
 }
 
 /**
@@ -676,6 +787,10 @@ class LxSubscription<T extends SubscriptionOptions> extends BaseLexiconItem<
 			...serializedOptions,
 		} as T & { type: "subscription" };
 	}
+
+	get infer(): InferType<T & { type: "subscription" }> {
+		return null as unknown as InferType<T & { type: "subscription" }>;
+	}
 }
 
 class Namespace<ID extends string, D extends LexiconNamespace["defs"]> {
@@ -684,10 +799,9 @@ class Namespace<ID extends string, D extends LexiconNamespace["defs"]> {
 		id: ID;
 		defs: { [K in keyof D]: ExtractJson<D[K]> };
 	};
-	constructor(
-		public id: ID,
-		public defs: D,
-	) {
+	public infer: InferDefs<D> = null as unknown as InferDefs<D>;
+
+	constructor(id: ID, defs: D) {
 		// Serialize defs if they contain class instances
 		const serializedDefs = Object.fromEntries(
 			Object.entries(defs).map(([key, value]) => {
@@ -701,11 +815,6 @@ class Namespace<ID extends string, D extends LexiconNamespace["defs"]> {
 			id,
 			defs: serializedDefs,
 		};
-	}
-
-	get infer(): InferNS<typeof this> {
-		// TODO this could return the runtime inferred type if we need it
-		return {} as InferNS<typeof this>;
 	}
 }
 
@@ -774,10 +883,10 @@ export const lx = {
 	 * Creates an array type with item schema and length constraints.
 	 * @see https://atproto.com/specs/lexicon#array
 	 */
-	array<Items extends Def["json"], Options extends ArrayOptions>(
-		items: Def | Items,
+	array<ItemType extends Def, Options extends ArrayOptions>(
+		items: ItemType,
 		options?: Options,
-	): LxArray<Items, Options> {
+	): LxArray<ItemType, Options> {
 		return new LxArray(items, options);
 	},
 	/**
@@ -820,7 +929,7 @@ export const lx = {
 	 * Creates an object type with defined properties.
 	 * @see https://atproto.com/specs/lexicon#object
 	 */
-	object<T extends ObjectProperties>(properties: T): LxObject<T> {
+	object<const T extends ObjectProperties>(properties: T): LxObject<T> {
 		return new LxObject(properties);
 	},
 	/**

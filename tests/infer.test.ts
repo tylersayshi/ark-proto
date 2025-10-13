@@ -1,6 +1,5 @@
 import { test } from "vitest";
 import { attest } from "@ark/attest";
-import type { InferNS } from "../src/infer.ts";
 import { lx } from "../src/lib.ts";
 
 test("InferNS produces expected type shape", () => {
@@ -8,19 +7,16 @@ test("InferNS produces expected type shape", () => {
 		main: lx.record({
 			key: "tid",
 			record: lx.object({
-				text: lx.string({ required: true }),
-				createdAt: lx.string({ required: true, format: "datetime" }),
+				text: lx.string().required(),
+				createdAt: lx.string({ format: "datetime" }).required(),
 				likes: lx.integer(),
 				tags: lx.array(lx.string(), { maxLength: 5 }),
 			}),
 		}),
 	});
 
-	type Result = InferNS<typeof exampleLexicon>;
-
 	// Type snapshot - this captures how types appear on hover
-	const result = {} as Result;
-	attest(result).type.toString.snap(`{
+	attest(exampleLexicon.infer).type.toString.snap(`{
   main: {
     createdAt?: string | undefined
     tags?: string[] | undefined
@@ -31,40 +27,30 @@ test("InferNS produces expected type shape", () => {
 });
 
 test("InferObject handles required fields", () => {
-	const schema = lx.object({
-		required: lx.string({ required: true }),
-		optional: lx.string(),
+	const namespace = lx.namespace("test", {
+		main: lx.object({
+			required: lx.string().required(),
+			optional: lx.string(),
+		}),
 	});
 
-	type Result = InferNS<{
-		lexicon: 1;
-		id: "test";
-		defs: { main: typeof schema };
-	}>;
-
-	const result = {} as Result;
-	attest(result).type.toString.snap(`{
+	attest(namespace.infer).type.toString.snap(`{
   main: {
-    required?: string | undefined
+    required: string | undefined
     optional?: string | undefined
   }
 }`);
 });
 
 test("InferObject handles nullable fields", () => {
-	const schema = lx.object({
-		nullable: lx.string({ nullable: true, required: true }),
+	const namespace = lx.namespace("test", {
+		main: lx.object({
+			nullable: lx.string().nullable(),
+		}),
 	});
 
-	type Result = InferNS<{
-		lexicon: 1;
-		id: "test";
-		defs: { main: typeof schema };
-	}>;
-
-	const result = {} as Result;
-	attest(result).type.toString.snap(
-		"{ main: { nullable?: string | undefined } }",
+	attest(namespace.infer).type.toString.snap(
+		"{ main: { nullable?: string | null | undefined } }",
 	);
 });
 
@@ -73,8 +59,8 @@ test("InferNS handles basic namespace", () => {
 		main: lx.record({
 			key: "tid",
 			record: lx.object({
-				text: lx.string({ required: true }),
-				createdAt: lx.string({ required: true, format: "datetime" }),
+				text: lx.string().required(),
+				createdAt: lx.string({ format: "datetime" }).required(),
 				likes: lx.integer(),
 				tags: lx.array(lx.string(), { maxLength: 5 }),
 			}),
