@@ -1,20 +1,22 @@
-import eslint from "@eslint/js";
+import baseConfig from "../../eslint.config.js";
+import reactCompiler from "eslint-plugin-react-compiler";
 import tseslint from "typescript-eslint";
 
 export default tseslint.config(
-	{ ignores: ["**/lib/**", "**/dist/**", "node_modules", "pnpm-lock.yaml", "**/setup-vitest.ts", "**/cli.js", "**/tests/**"] },
-	{ linterOptions: { reportUnusedDisableDirectives: "error" } },
-	eslint.configs.recommended,
+	...baseConfig,
 	{
+		files: ["**/*.{jsx,tsx}"],
 		extends: [
 			tseslint.configs.strictTypeChecked,
 			tseslint.configs.stylisticTypeChecked,
 		],
-		files: ["**/*.{js,ts}"],
 		languageOptions: {
 			parserOptions: {
 				projectService: { allowDefaultProject: ["*.config.*s"] },
 			},
+		},
+		plugins: {
+			"react-compiler": reactCompiler,
 		},
 		rules: {
 			"@typescript-eslint/consistent-type-definitions": "off",
@@ -23,13 +25,13 @@ export default tseslint.config(
 			"@typescript-eslint/no-unsafe-member-access": "off",
 			"@typescript-eslint/no-unsafe-call": "off",
 			"@typescript-eslint/restrict-plus-operands": "off",
-		},
-	},
-	{
-		files: ["**/*.{test,bench}.ts"],
-		rules: {
+			"@typescript-eslint/no-confusing-void-expression": "off",
+			"@typescript-eslint/prefer-nullish-coalescing": "off",
+			"@typescript-eslint/prefer-regexp-exec": "off",
+			"@typescript-eslint/no-implied-eval": "off",
+			"@typescript-eslint/no-non-null-assertion": "off",
 			"@typescript-eslint/no-floating-promises": "off",
-			"@typescript-eslint/no-unused-vars": "off",
+			"react-compiler/react-compiler": "error",
 		},
 	},
 );
