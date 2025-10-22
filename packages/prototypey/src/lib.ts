@@ -348,7 +348,10 @@ class Lexicon<T extends LexiconNamespace> implements LexiconSchema<T> {
 
 	constructor(json: T) {
 		this.json = json;
-		this._validator = new Lexicons([json as unknown as LexiconDoc]);
+		// Clone before passing to Lexicons to prevent mutation of this.json
+		this._validator = new Lexicons([
+			structuredClone(json) as unknown as LexiconDoc,
+		]);
 	}
 
 	/**
