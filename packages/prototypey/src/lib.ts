@@ -1,7 +1,14 @@
 /* eslint-disable @typescript-eslint/no-empty-object-type */
 import type { Infer } from "./infer.ts";
 import type { UnionToTuple } from "./type-utils.ts";
-import { LexiconDoc, Lexicons, ValidationResult } from "@atproto/lexicon";
+import {
+	LexiconDoc,
+	Lexicons,
+	type ValidationResult as AtprotoValidationResult,
+} from "@atproto/lexicon";
+
+// Re-export to avoid non-portable type references in CI
+export type ValidationResult<T = unknown> = AtprotoValidationResult<T>;
 
 /** @see https://atproto.com/specs/lexicon#overview-of-types */
 type LexiconType =
@@ -346,11 +353,11 @@ class Lexicon<T extends LexiconNamespace> {
 	validate(
 		data: unknown,
 		def: keyof T["defs"] = "main",
-	): ValidationResult<Infer<{ json: T }>> {
+	): AtprotoValidationResult<Infer<{ json: T }>> {
 		return this._validator.validate(
 			`${this.json.id}#${def as string}`,
 			data,
-		) as ValidationResult<Infer<{ json: T }>>;
+		) as AtprotoValidationResult<Infer<{ json: T }>>;
 	}
 }
 
