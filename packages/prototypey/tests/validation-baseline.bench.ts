@@ -132,7 +132,10 @@ describe("baseline: validation", () => {
 							type: "object",
 							properties: {
 								author: { type: "ref", ref: "#user" },
-								replies: { type: "array", items: { type: "ref", ref: "#reply" } },
+								replies: {
+									type: "array",
+									items: { type: "ref", ref: "#reply" },
+								},
 								content: { type: "string" },
 								createdAt: { type: "string", format: "datetime" },
 							},

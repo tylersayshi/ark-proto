@@ -467,7 +467,10 @@ describe("union types", () => {
 describe("token types", () => {
 	const schema = lx.lexicon("test.tokens", {
 		main: lx.object({
-			action: lx.string({ knownValues: ["like", "repost", "follow"], required: true }),
+			action: lx.string({
+				knownValues: ["like", "repost", "follow"],
+				required: true,
+			}),
 		}),
 	});
 
