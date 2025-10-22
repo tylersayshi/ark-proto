@@ -603,6 +603,83 @@ describe("bytes, CID, and unknown primitives", () => {
 	});
 });
 
+describe("validate with custom def parameter", () => {
+	const schema = lx.lexicon("test.multidefs", {
+		user: lx.object({
+			handle: lx.string({ required: true }),
+			displayName: lx.string(),
+		}),
+		post: lx.object({
+			text: lx.string({ required: true }),
+			author: lx.ref("#user", { required: true }),
+		}),
+		main: lx.object({
+			id: lx.string({ required: true }),
+			name: lx.string({ required: true }),
+		}),
+	});
+
+	it("should validate against main def by default", () => {
+		const result = schema.validate({ id: "123", name: "test" });
+		expect(result.success).toBe(true);
+	});
+
+	it("should validate against main def when explicitly specified", () => {
+		const result = schema.validate({ id: "123", name: "test" }, "main");
+		expect(result.success).toBe(true);
+	});
+
+	it("should validate against user def when specified", () => {
+		const result = schema.validate({ handle: "alice.bsky.social" }, "user");
+		expect(result.success).toBe(true);
+	});
+
+	it("should validate against post def when specified", () => {
+		const result = schema.validate(
+			{
+				text: "Hello world",
+				author: { handle: "bob.bsky.social", displayName: "Bob" },
+			},
+			"post",
+		);
+		expect(result.success).toBe(true);
+	});
+
+	it("should reject invalid data for user def", () => {
+		const result = schema.validate({ displayName: "Alice" }, "user");
+		expect(result.success).toBe(false);
+	});
+
+	it("should reject invalid data for post def", () => {
+		const result = schema.validate(
+			{
+				text: "Hello world",
+				// missing author
+			},
+			"post",
+		);
+		expect(result.success).toBe(false);
+	});
+
+	it("should reject main def data when validating against user def", () => {
+		const result = schema.validate({ id: "123", name: "test" }, "user");
+		expect(result.success).toBe(false);
+	});
+
+	it("should reject user def data when validating against main def", () => {
+		const result = schema.validate({ handle: "alice.bsky.social" });
+		expect(result.success).toBe(false);
+	});
+
+	it("should accept valid data with optional fields for user def", () => {
+		const result = schema.validate(
+			{ handle: "alice.bsky.social", displayName: "Alice" },
+			"user",
+		);
+		expect(result.success).toBe(true);
+	});
+});
+
 describe("deep nesting", () => {
 	const schema = lx.lexicon("test.deep", {
 		level3: lx.object({

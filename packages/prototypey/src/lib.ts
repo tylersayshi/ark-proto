@@ -328,7 +328,7 @@ interface SubscriptionOptions {
 	errors?: ErrorDef[];
 }
 
-class Namespace<T extends LexiconNamespace> {
+class Lexicon<T extends LexiconNamespace> {
 	public json: T;
 	public infer: Infer<{ json: T }> = null as unknown as Infer<{ json: T }>;
 	private _validator: Lexicons;
@@ -343,9 +343,12 @@ class Namespace<T extends LexiconNamespace> {
 	 * @param data - The data to validate
 	 * @returns ValidationResult with success status and value or error
 	 */
-	validate(data: unknown): ValidationResult<Infer<{ json: T }>> {
+	validate(
+		data: unknown,
+		def: keyof T["defs"] = "main",
+	): ValidationResult<Infer<{ json: T }>> {
 		return this._validator.validate(
-			`${this.json.id}#main`,
+			`${this.json.id}#${def as string}`,
 			data,
 		) as ValidationResult<Infer<{ json: T }>>;
 	}
@@ -584,8 +587,8 @@ export const lx = {
 	lexicon<ID extends string, D extends LexiconNamespace["defs"]>(
 		id: ID,
 		defs: D,
-	): Namespace<{ lexicon: 1; id: ID; defs: D }> {
-		return new Namespace({
+	): Lexicon<{ lexicon: 1; id: ID; defs: D }> {
+		return new Lexicon({
 			lexicon: 1,
 			id,
 			defs,
