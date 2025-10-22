@@ -114,6 +114,7 @@ npm run lexicon:emit
 - Library art! Please reach out if you'd be willing to contribute some drawings or anything!
 - Runtime validation using [@atproto/lexicon](https://www.npmjs.com/package/@atproto/lexicon)
   - this will be hard to get correct, I'm weary of loading all of the json in a project's lexicons into js memory and would like to run benchmarks and find the best way to get this right.
+- Add CLI support for inferring and validating from json as the starting point
 - The CLI needs more real world use and mileage. I expect bugs and weird behavior in this initial release (sorry).
 
 ## Disclaimer:
