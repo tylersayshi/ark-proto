@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/no-empty-object-type */
 import type { Infer } from "./infer.ts";
 import type { UnionToTuple } from "./type-utils.ts";
-import { LexiconDoc, Lexicons, ValidationResult } from "@atproto/lexicon";
+import type { LexiconDoc, ValidationResult } from "@atproto/lexicon";
+import { Lexicons } from "@atproto/lexicon";
 
 /** @see https://atproto.com/specs/lexicon#overview-of-types */
 type LexiconType =
