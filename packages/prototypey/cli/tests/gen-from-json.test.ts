@@ -120,7 +120,10 @@ describe("genFromJSON", () => {
 			join(outDir, "app.bsky.actor.profile.ts"),
 			"utf-8",
 		);
-		const postTS = await readFile(join(outDir, "app.bsky.feed.post.ts"), "utf-8");
+		const postTS = await readFile(
+			join(outDir, "app.bsky.feed.post.ts"),
+			"utf-8",
+		);
 
 		expect(profileTS).toContain("appBskyActorProfile");
 		expect(postTS).toContain("appBskyFeedPost");
@@ -129,7 +132,10 @@ describe("genFromJSON", () => {
 	test("generates correct export names from lexicon IDs", async () => {
 		const testCases = [
 			{ id: "app.bsky.feed.post", expectedName: "appBskyFeedPost" },
-			{ id: "com.atproto.repo.createRecord", expectedName: "comAtprotoRepoCreateRecord" },
+			{
+				id: "com.atproto.repo.createRecord",
+				expectedName: "comAtprotoRepoCreateRecord",
+			},
 			{ id: "app.bsky.actor.profile", expectedName: "appBskyActorProfile" },
 			{ id: "simple", expectedName: "simple" },
 		];

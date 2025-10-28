@@ -71,7 +71,7 @@ async function processJSONFile(
 	try {
 		// Read and parse the JSON file
 		const content = await readFile(jsonPath, "utf-8");
-		const lexiconJSON: LexiconJSON = JSON.parse(content);
+		const lexiconJSON = JSON.parse(content);
 
 		// Validate it's a lexicon
 		if (
@@ -84,7 +84,7 @@ async function processJSONFile(
 			return;
 		}
 
-		const { id } = lexiconJSON;
+		const { id } = lexiconJSON as LexiconJSON;
 		const exportName = lexiconIdToExportName(id);
 
 		// Generate TypeScript content
