@@ -41,7 +41,7 @@
 		"tinyglobby": "^0.2.15"
 	},
 	"devDependencies": {
-		"@ark/attest": "^0.49.0",
+		"@ark/attest": "^0.53.0",
 		"@types/node": "24.0.4",
 		"tsdown": "0.12.7",
 		"typescript": "5.8.3",
