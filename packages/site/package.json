@@ -29,7 +29,7 @@
 		"babel-plugin-react-compiler": "^1.0.0",
 		"eslint-plugin-react-compiler": "19.1.0-rc.2",
 		"jsdom": "^25.0.1",
-		"typescript": "5.8.3",
+		"typescript": "5.9.3",
 		"vite": "^6.0.5",
 		"vitest": "^3.2.4"
 	}
